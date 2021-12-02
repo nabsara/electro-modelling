@@ -16,6 +16,8 @@ $ git clone https://github.com/nabsara/electro-modelling.git
 (myenv)$ pip install -r requirements.txt
 ```
 
+TODO: add .env configuration
+
 
 ## Project Structure :
 
