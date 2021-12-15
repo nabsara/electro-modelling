@@ -78,7 +78,7 @@ class DCGAN:
         else:
             raise ValueError(f"Loss {loss} not implemented in DCGAN")
 
-    def train(self, train_dataloader, loss="bce", lr=0.0002, k_update_only_disc=1, n_epochs=50, display_step=500):
+    def train(self, train_dataloader, loss="bce", lr=0.0002, k_update_only_disc=1, n_epochs=50, display_step=500, models_dir=settings.MODELS_DIR):
         # TODO: Add save model checkpoints and resume training from checkpoints
         start = time.time()
 
@@ -164,7 +164,7 @@ class DCGAN:
                     'optimizer_state_dict': self.gen_opt.state_dict(),
                     'loss': g_losses[epoch],
                 }, os.path.join(
-                    settings.MODELS_DIR,
+                    models_dir,
                     f'generator_dcgan_mnist_{loss}_{lr}_{k_update_only_disc}_{n_epochs}.pt')
                 )
                 torch.save({
@@ -173,7 +173,7 @@ class DCGAN:
                     'optimizer_state_dict': self.disc_opt.state_dict(),
                     'loss': d_losses[epoch],
                 }, os.path.join(
-                    settings.MODELS_DIR,
+                    models_dir,
                     f'discriminator_dcgan_mnist_{loss}_{lr}_{k_update_only_disc}_{n_epochs}.pt')
                 )
 

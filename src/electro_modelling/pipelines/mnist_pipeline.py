@@ -2,7 +2,6 @@ import os
 import time
 import matplotlib.pyplot as plt
 
-from electro_modelling.config import settings
 from electro_modelling.helpers.utils import save_pickle
 from electro_modelling.datasets.mnist_data_loader import mnist_data_loader
 from electro_modelling.models.dcgan import DCGAN
@@ -25,7 +24,8 @@ class MNISTPipeline:
             lr=learning_rate,
             k_update_only_disc=k_disc_steps,
             n_epochs=n_epochs,
-            display_step=display_step
+            display_step=display_step,
+            models_dir=self.models_dir
         )
         results = {
             "d_loss": d_loss,
@@ -35,7 +35,7 @@ class MNISTPipeline:
         save_pickle(
             results,
             os.path.join(
-                settings.MODELS_DIR,
+                self.models_dir,
                 f"results_loss_dcgan_mnist_{loss}_{learning_rate}_{k_disc_steps}_{n_epochs}.pkl"
             )
         )
