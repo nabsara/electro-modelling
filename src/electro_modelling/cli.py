@@ -50,6 +50,7 @@ from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
 )
 def train_mnist_gan(data_dir, models_dir, batch_size, z_dims, loss, n_epochs, learning_rate, k_disc_steps, display_step):
     # TODO: Add config file to deal with hyperparameters
+    # TODO: connect to tensorboard
     print(locals())
     pipeline = MNISTPipeline(data_dir, models_dir, batch_size, z_dims)
     pipeline.train(
