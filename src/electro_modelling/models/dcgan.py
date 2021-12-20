@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from torchvision.utils import make_grid
+from torch.utils.tensorboard import SummaryWriter
 
 from electro_modelling.models.discriminator import Discriminator
 from electro_modelling.models.generator import Generator
@@ -82,6 +83,10 @@ class DCGAN:
     def train(self, train_dataloader, lr=0.0002, k_disc_steps=1, n_epochs=50, display_step=500, models_dir=settings.MODELS_DIR, show_fig=False):
         # TODO: Add save model checkpoints and resume training from checkpoints
         start = time.time()
+        # defining a SummaryWriter to write information to TensorBoard during training
+        writer = SummaryWriter(os.path.join(
+            models_dir, f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}")
+        )
 
         # define generator and discriminator loss and optimizers
         self._init_optimizer(lr)
@@ -142,7 +147,22 @@ class DCGAN:
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
                         f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tD_loss: {mean_disc_loss}"
                     )
-                    # TODO: Add to tensorboard
+                    # Add training losses and fake images evolution to tensorboard
+                    writer.add_scalar(
+                        "training generator loss",
+                        g_loss / display_step,
+                        epoch * len(train_dataloader) + cur_step
+                    )
+                    writer.add_scalar(
+                        "training discriminator loss",
+                        d_loss / display_step,
+                        epoch * len(train_dataloader) + cur_step
+                    )
+                    writer.add_image(
+                        "generated_images",
+                        make_grid(fake),
+                        epoch * len(train_dataloader) + cur_step
+                    )
                     if show_fig:
                         show_tensor_images(fake)
                     with torch.no_grad():
