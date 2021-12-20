@@ -1,31 +1,32 @@
 import os
-import time
-import matplotlib.pyplot as plt
 
 from electro_modelling.helpers.utils import save_pickle
 from electro_modelling.datasets.mnist_data_loader import mnist_data_loader
-from electro_modelling.models.dcgan import DCGAN
+from electro_modelling.models.models import models
 
 
 class MNISTPipeline:
 
-    def __init__(self, data_dir, models_dir, batch_size, z_dims):
+    def __init__(self, model_name, data_dir, models_dir, batch_size, z_dims):
+        if model_name not in list(models.keys()):
+            raise ValueError(f"Model named {model_name} not implemented. Try models in : {list(models.keys())}")
+
         self.data_dir = data_dir
         self.models_dir = models_dir
         self.batch_size = batch_size
         self.z_dim = z_dims
         self.train_loader, self.test_loader = mnist_data_loader(self.batch_size, data_dir=self.data_dir)
-        self.model = DCGAN(z_dim=self.z_dim, init_weights=True)
+        self.model = models[model_name](z_dim=self.z_dim)
 
-    def train(self, loss, learning_rate, k_disc_steps, n_epochs, display_step):
+    def train(self, learning_rate, k_disc_steps, n_epochs, display_step, show_fig=False):
         d_loss, g_loss, img_list = self.model.train(
             train_dataloader=self.train_loader,
-            loss=loss,
             lr=learning_rate,
-            k_update_only_disc=k_disc_steps,
+            k_disc_steps=k_disc_steps,
             n_epochs=n_epochs,
             display_step=display_step,
-            models_dir=self.models_dir
+            models_dir=self.models_dir,
+            show_fig=show_fig
         )
         results = {
             "d_loss": d_loss,
@@ -36,17 +37,6 @@ class MNISTPipeline:
             results,
             os.path.join(
                 self.models_dir,
-                f"results_loss_dcgan_mnist_{loss}_{learning_rate}_{k_disc_steps}_{n_epochs}.pkl"
+                f"results_loss_mnist__{self.model.model_name}__z_{self.z_dim}__lr_{learning_rate}__k_{k_disc_steps}__e_{n_epochs}.pkl"
             )
         )
-
-    # TODO: to remove
-    @staticmethod
-    def plot_gan_losses(d_loss, g_loss):
-        fig, ax = plt.subplots(figsize=(10, 8))
-        ax.plot(d_loss.detach(), label="discriminator loss")
-        ax.plot(g_loss.detach(), label="generator loss")
-        ax.set_xlabel("n_epochs")
-        ax.legend()
-        ax.grid(True)
-        plt.show()

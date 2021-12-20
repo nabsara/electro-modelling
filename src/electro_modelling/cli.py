@@ -3,6 +3,7 @@ from electro_modelling.config import settings
 from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
 
 
+@click.argument("model")
 @click.option(
     "--data_dir",
     default=settings.DATA_DIR,
@@ -24,11 +25,6 @@ from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
     help="Dimension of the noise vector (latent space)",
 )
 @click.option(
-    "--loss",
-    default="bce",
-    help="Name of the training loss",
-)
-@click.option(
     "--n_epochs",
     default=50,
     help="Number of epochs",
@@ -48,15 +44,22 @@ from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
     default=500,
     help="Number of iterations between each training stats display",
 )
-def train_mnist_gan(data_dir, models_dir, batch_size, z_dims, loss, n_epochs, learning_rate, k_disc_steps, display_step):
+@click.option('--show', is_flag=True)
+def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+    """
+    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+
+    model: str
+        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+    """
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
     print(locals())
-    pipeline = MNISTPipeline(data_dir, models_dir, batch_size, z_dims)
+    pipeline = MNISTPipeline(model, data_dir, models_dir, batch_size, z_dims)
     pipeline.train(
-        loss=loss,
         learning_rate=learning_rate,
         k_disc_steps=k_disc_steps,
         n_epochs=n_epochs,
-        display_step=display_step
+        display_step=display_step,
+        show_fig=show
     )
