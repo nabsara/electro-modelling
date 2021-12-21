@@ -46,6 +46,6 @@ torch.ones_like(disc_real_pred))
         return disc_loss
 
     def _compute_gen_loss(self, disc_fake_pred):
-        gen_loss = self.criterion2(disc_fake_pred,
+        gen_loss = -self.criterion2(disc_fake_pred,
 torch.ones_like(disc_fake_pred))
         return gen_loss
