@@ -4,6 +4,13 @@ import torch.nn as nn
 from electro_modelling.models.dcgan import DCGAN
 
 
+class MyHingeLoss(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, output, target):
+        return (torch.mean(torch.maximum(1 - torch.mul(output, target),0*target),0))     
+
+
 class HingeGAN(DCGAN):
 
     def __init__(self, z_dim):
@@ -20,7 +27,7 @@ lr=learning_rate, betas=(beta_1, beta_2))
 lr=learning_rate, betas=(beta_1, beta_2))
 
     def _init_criterion(self):
-        self.criterion = nn.HingeEmbeddingLoss()
+        self.criterion = MyHingeLoss()
 
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
         disc_fake_loss = self.criterion(disc_fake_pred,
