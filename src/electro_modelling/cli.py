@@ -1,6 +1,8 @@
 import click
+import os
 from electro_modelling.config import settings
 from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
+from electro_modelling.pipelines.dataset_pipeline import TechnoDatasetPipeline
 
 
 @click.argument("model")
@@ -63,3 +65,36 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
         display_step=display_step,
         show_fig=show
     )
+
+
+
+
+@click.option(
+    "--nfft",
+    default=1024,
+    help="Nfft",
+)
+@click.option(
+    "--sr",
+    default=16000,
+    help="Sampling Rate",
+)
+@click.option(
+    "--data_path",
+    default="/fast-1/tmp/",
+    help="Sampling Rate",
+)
+@click.option(
+    "--nb_samples",
+    default=None,
+    help="Sampling Rate",
+)
+def prepare_dataset(nfft,sr,data_path,nb_samples):
+    #Signal processing parameters
+    nmels=int(nfft/2+1)
+    #File locations    
+    dataset_location = os.path.join(data_path, 'techno.dat')
+    save_location = os.path.join(data_path , 'techno_spectrograms.pkl')
+    #Instanciate pipeline
+    pipeline = TechnoDatasetPipeline(nfft,nmels,sr,dataset_location=dataset_location,save_location=save_location)
+    pipeline.process_dataset(nb_samples = nb_samples)
