@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 
 class TechnoDatasetWav(Dataset):
+
     def __init__(self, dat_location="/fast-1/tmp/techno.dat") -> None:
         super().__init__()
 
