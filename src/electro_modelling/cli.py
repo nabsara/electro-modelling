@@ -85,16 +85,21 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
     help="Sampling Rate",
 )
 @click.option(
+    "--save_dir",
+    default="/slow-2/atiam/electro_modelling",
+    help="Sampling Rate",
+)
+@click.option(
     "--nb_samples",
     default=None,
     help="Sampling Rate",
 )
-def prepare_dataset(nfft,sr,data_path,nb_samples):
-    #Signal processing parameters
-    nmels=int(nfft/2+1)
-    #File locations    
+def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
+    # Signal processing parameters
+    nmels = int(nfft/2+1)
+    # File locations
     dataset_location = os.path.join(data_path, 'techno.dat')
-    save_location = os.path.join(data_path , 'techno_spectrograms.pkl')
-    #Instanciate pipeline
-    pipeline = TechnoDatasetPipeline(nfft,nmels,sr,dataset_location=dataset_location,save_location=save_location)
-    pipeline.process_dataset(nb_samples = nb_samples)
+    save_location = os.path.join(save_dir, 'techno_spectrograms.pkl')
+    # Instanciate pipeline
+    pipeline = TechnoDatasetPipeline(nfft, nmels, sr, dataset_location=dataset_location, save_location=save_location)
+    pipeline.process_dataset(nb_samples=nb_samples)
