@@ -33,12 +33,10 @@ lr=learning_rate, betas=(beta_1, beta_2))
         self.disc_opt = torch.optim.Adam(self.discriminator.parameters(),
 lr=learning_rate, betas=(beta_1, beta_2))
 
-    def _init_criterion1(self):
+    def _init_criterion(self):
         self.criterion1 = MyHingeLoss()
-        
-    def _init_criterion2(self):
         self.criterion2 = MyLinearLoss()
-
+        
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
         disc_fake_loss = self.criterion1(disc_fake_pred,
 torch.zeros_like(disc_fake_pred))
