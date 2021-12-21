@@ -5,19 +5,20 @@ import librosa
 
 class SignalOperators:
     
-    def __init__(self, Nfft,Nmels,sr,signal_length=32000):
-        self.Nfft = Nfft
-        self.Nfft2 = int(Nfft/2+1)
-        self.Nmels = self.Nfft2
-        self.hop = int(self.Nfft/4)
-        self.win_length = self.Nfft
+    def __init__(self, nfft=1024,nmels=512,sr=16000,ntimes = 128,signal_length=32000):
+        self.ntimes = ntimes
+        self.nfft = nfft
+        self.nmels = nmels
+        self.nfft2 = int(nfft/2+1)
+        self.hop = int(self.nfft/4)
+        self.win_length = self.nfft
         self.sr = sr
         self.signal_length = signal_length
         self.nb_trames = int((self.signal_length-self.win_length)/self.hop)
     
-        self.freqs = np.linspace(0,self.sr/2,self.Nfft2)
-        self.times = np.linspace(0,self.signal_length/self.sr,self.nb_trames)
-        self.mel_freqs = librosa.mel_frequencies(n_mels=self.Nmels, fmin=0.0, fmax=sr/2,htk=True)
+        self.freqs = np.linspace(0,self.sr/2,self.nfft2)
+        self.times = np.linspace(0,self.signal_length/self.sr*self.ntimes/self.nb_trames,self.ntimes)
+        self.mel_freqs = librosa.mel_frequencies(n_mels=self.nmels, fmin=0.0, fmax=sr/2,htk=True)
 
     def forward(self,signal):
         STFT = self.get_stft(signal)
@@ -38,23 +39,26 @@ class SignalOperators:
          return(np.cumsum(IF*np.pi,axis=1))
     
     def get_stft(self,signal):
-        STFT = np.zeros((self.Nfft2,self.nb_trames),dtype='complex')
+        STFT = np.zeros((self.nfft2,self.nb_trames),dtype='complex')
         for j in range(self.nb_trames):
             i0 = j*self.hop
             iend = min(i0+self.win_length,signal.size)
             signal_w = signal[i0:iend]
             fen = np.hanning(len(signal_w))
             signal_w = signal_w*fen
-            STFT[:,j] = np.fft.rfft(signal_w,self.Nfft)
+            STFT[:,j] = np.fft.rfft(signal_w,self.nfft)
+        STFT = np.pad(STFT,([0,0],[0,self.ntimes-self.nb_trames]))
         return STFT
     
     
     def stft_to_mel(self,STFT):
-        fbank = librosa.filters.mel(sr=self.sr, n_fft=self.Nfft, n_mels=self.Nmels,fmin=0,fmax=self.sr/2,htk=True,norm=False)
+        fbank = librosa.filters.mel(sr=self.sr, n_fft=self.nfft, n_mels=self.nmels,fmin=0,fmax=self.sr/2,htk=True,norm=False)
         STFT_mel_amp =np.dot(fbank, np.abs(STFT))
         STFT_mel_amp = np.log10(STFT_mel_amp+1e-6 )       
         STFT_mel_if = np.dot(fbank,self.get_IF_from_phase(np.angle(STFT)))
         STFT_mel = np.stack((STFT_mel_amp,STFT_mel_if))
+        
+        
         return(STFT_mel)
     
     

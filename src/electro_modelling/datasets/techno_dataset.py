@@ -23,8 +23,14 @@ class TechnoDatasetWav(Dataset):
     
     
 class TechnoDatasetSpectrogram(Dataset):
-    def __init__(self, tensors,transform=None):
-        self.tensors = tensors
+    def __init__(self, tensors,transform=None,phase_method = 'griff'):
+        super().__init__()
+        if phase_method=='griff':
+            self.tensors = tensors[:,:1,:,:]
+ 
+        elif phase_method == 'IF':
+            self.tensors = tensors
+        self.tensors=self.tensors.float()
         self.transform = transform
 
     def __len__(self):

@@ -6,8 +6,8 @@ import torch
 from tqdm import tqdm
 
 class TechnoDatasetPipeline:
-    def __init__(self, Nfft,Nmels,sr,dataset_location="/fast-1/tmp/techno.dat",save_location="/fast-1/tmp/techno_spectrograms.pkl"):
-        self.operator = SignalOperators(Nfft,Nmels,sr)
+    def __init__(self,dataset_location="/fast-1/tmp/techno.dat",save_location="/fast-1/tmp/techno_spectrograms.pkl"):
+        self.operator = SignalOperators()
         self.dataset = TechnoDatasetWav(dataset_location)
         self.save_location = save_location
         self.len_dataset = self.dataset.__len__()

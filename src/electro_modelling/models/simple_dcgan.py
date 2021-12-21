@@ -6,11 +6,13 @@ from electro_modelling.models.dcgan import DCGAN
 
 class SimpleDCGAN(DCGAN):
 
-    def __init__(self, z_dim):
+    def __init__(self, z_dim,dataset='MNIST',img_chan=1):
         super().__init__(
             z_dim=z_dim,
             model_name="simple_dcgan",
-            init_weights=True
+            init_weights=True,
+            dataset=dataset,
+            img_chan = img_chan
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):

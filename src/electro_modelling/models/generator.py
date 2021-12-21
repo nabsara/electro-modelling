@@ -23,17 +23,48 @@ class Generator(nn.Module):
 
     """
 
-    def __init__(self, z_dim, img_chan=1, hidden_dim=64):
+    def __init__(self,dataset,z_dim, img_chan,hidden_dim):
         super().__init__()
         self.z_dim = z_dim
+        if dataset == 'MNIST':
+            hidden_dim=64
+            img_chan=1
+            self.model = nn.Sequential(
+                self.make_gen_block(input_channels=z_dim, output_channels=256, kernel_size=3, stride=2),
+                self.make_gen_block(input_channels=hidden_dim * 4, output_channels=hidden_dim * 2, kernel_size=4, stride=1),
+                self.make_gen_block(input_channels=hidden_dim * 2, output_channels=hidden_dim, kernel_size=3, stride=2),
+                nn.ConvTranspose2d(hidden_dim, img_chan, kernel_size=4, stride=2),
+                nn.Tanh()
+            )
+        elif dataset == 'techno':
+            
+            self.model = nn.Sequential(
+            nn.ConvTranspose2d(z_dim, hidden_dim *8, (8,2), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),            
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *2, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),
+            nn.Upsample(scale_factor=2),
+            self.make_gen_block_techno(input_channels=hidden_dim *2, output_channels=hidden_dim, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim, output_channels=hidden_dim, kernel_size=(3,3), stride=1),
 
-        self.model = nn.Sequential(
-            self.make_gen_block(input_channels=z_dim, output_channels=hidden_dim * 4, kernel_size=3, stride=2),
-            self.make_gen_block(input_channels=hidden_dim * 4, output_channels=hidden_dim * 2, kernel_size=4, stride=1),
-            self.make_gen_block(input_channels=hidden_dim * 2, output_channels=hidden_dim, kernel_size=3, stride=2),
-            nn.ConvTranspose2d(hidden_dim, img_chan, kernel_size=4, stride=2),
+            nn.Conv2d(hidden_dim, img_chan, kernel_size=1, stride=1),
             nn.Tanh()
-        )
+            )
+        else:
+            print('data set name is not known')
 
     def make_gen_block(self, input_channels, output_channels, kernel_size, stride):
         """
@@ -63,7 +94,35 @@ class Generator(nn.Module):
             nn.BatchNorm2d(num_features=output_channels),
             nn.ReLU(inplace=True)
         )
+    def make_gen_block_techno(self, input_channels, output_channels, kernel_size, stride,padding='same'):
+        """
+        Build the sequence of operations corresponding to a generator block of DCGAN :
+        - transposed convolution
+        - batchnorm
+        - ReLU activation
 
+        Parameters
+        ----------
+        input_channels : int
+            the number of channels of the input feature representation
+        output_channels : int
+            the number of channels of the output feature representation
+        kernel_size : int
+            the size of each convolutional filter (kernel_size, kernel_size)
+        stride : int
+            the stride of the convolution
+
+        Returns
+        -------
+            nn.Sequential DCGAN generator block
+        """
+
+        return nn.Sequential(
+            nn.Conv2d(input_channels, output_channels, kernel_size, stride=stride,padding=padding),
+            nn.LeakyReLU(negative_slope=0.2,inplace=True),
+            nn.BatchNorm2d(num_features=output_channels)
+        )
+    
     def forward(self, x):
         """
         Function that applies the forward pass of the generator model on a given

@@ -14,10 +14,11 @@ from electro_modelling.helpers.helpers_visualization import show_tensor_images
 
 class DCGAN:
 
-    def __init__(self, z_dim, model_name, init_weights=True):
+    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1):
         self.z_dim = z_dim
-        self.generator = Generator(self.z_dim, img_chan=1, hidden_dim=64).to(device=settings.device)
-        self.discriminator = Discriminator(img_chan=1, hidden_dim=16).to(device=settings.device)
+        self.dataset = dataset
+        self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32).to(device=settings.device)
+        self.discriminator = Discriminator(dataset,img_chan, hidden_dim=32).to(device=settings.device)
 
         self.model_name = model_name
 
@@ -100,7 +101,9 @@ class DCGAN:
             cur_step = 0
             g_loss = 0
             d_loss = 0
-            for real, _ in tqdm(train_dataloader):
+            for real in tqdm(train_dataloader):
+                if self.dataset=='MNIST':
+                    _,real = real
                 cur_batch_size = len(real)
                 real = real.to(settings.device)
 
