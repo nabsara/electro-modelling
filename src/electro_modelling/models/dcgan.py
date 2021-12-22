@@ -172,9 +172,9 @@ class DCGAN:
                         fake = self.generator(self.fixed_noise).detach().cpu()
                         
                         if show_fig:
-                            if dataset=='techno':
+                            if self.dataset=='techno':
                                 for STFT_amp in fake.numpy():
-                                    plot_spectrogram_mag(STFT_amp,figsize=(12,6))
+                                    plot_spectrogram_mag(STFT_amp[0],figsize=(12,6))
                             else:
                                 show_tensor_images(fake)
                             

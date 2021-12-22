@@ -35,9 +35,9 @@ def plot_spectrogram_mag(STFT_amp,figsize=(12,6)):
         divider = make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im, cax=cax, orientation='vertical')
-        
-    fig,ax=plt.subplots(1,1,figsize=figsize)
     
+    fig,ax=plt.subplots(1,1,figsize=figsize)
+    print(STFT_amp.shape)
     times = np.linspace(0,2*128/121,STFT_amp.shape[1])
     freqs = librosa.mel_frequencies(n_mels=STFT_amp.shape[0], fmin=0.0, fmax=16000/2,htk=True)
     
@@ -46,6 +46,8 @@ def plot_spectrogram_mag(STFT_amp,figsize=(12,6)):
     im0 = ax.pcolor(X,Y,STFT_amp,cmap='magma')
     
     add_colorbar(fig,ax,im0)
+    labelRow='Temps'
+    labelCol='Fréquences'
     ax.set_xlabel(labelRow)
     ax.set_ylabel(labelCol)
     

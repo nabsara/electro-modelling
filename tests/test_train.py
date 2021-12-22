@@ -37,13 +37,15 @@ pipeline.train(
 
 
 # from electro_modelling.models.dcgan import DCGAN
+# from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag
 
 # model = DCGAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
 
 
 # noise = model.get_noise(10)
 
-# imgs = model.generator.forward(noise)
-# print(imgs.shape)
-# print(imgs.dtype)
-# labels = model.discriminator.forward(imgs)
+# imgs = model.generator.forward(noise).detach().cpu()
+# plot_spectrogram_mag(imgs[0][0])
+# # print(imgs.shape)
+# # print(imgs.dtype)
+# # labels = model.discriminator.forward(imgs)
