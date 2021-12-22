@@ -3,9 +3,9 @@
 import sys
 sys.path.append('./src/')
 
-# import os 
-# import tqdm
-# os.chdir(r'C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\electro-modelling\src')
+import os 
+import tqdm
+os.chdir(r'C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\electro-modelling\src')
 
 from electro_modelling.pipelines.techno_pipeline import TechnoPipeline
 
@@ -13,20 +13,19 @@ from electro_modelling.pipelines.techno_pipeline import TechnoPipeline
 #File locations
 
 
-model_name = 'dcgan'
+data_dir =r"C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\data"
 dataset_dir = data_dir + r'\techno_spectrograms.pkl'
-data_dir = "./data"
-models_dir = "./models" 
-batch_size = 128 
+models_dir = data_dir
+batch_size = 32 
 z_dims = 256
 model = "dcgan"
 n_epochs = 1 
 learning_rate = 0.0002 
 k_disc_steps = 1
-display_step = 500
-show = False
+display_step = 5
+show = True
 
-pipeline = TechnoPipeline( model_name, data_dir, dataset_dir,models_dir, batch_size, z_dims,phase_method = 'griff')
+pipeline = TechnoPipeline( model, data_dir, dataset_dir,models_dir, batch_size, z_dims,phase_method = 'griff')
 pipeline.train(
     learning_rate=learning_rate,
     k_disc_steps=k_disc_steps,
@@ -34,3 +33,17 @@ pipeline.train(
     display_step=display_step,
     show_fig=show
 )
+
+
+
+# from electro_modelling.models.dcgan import DCGAN
+
+# model = DCGAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
+
+
+# noise = model.get_noise(10)
+
+# imgs = model.generator.forward(noise)
+# print(imgs.shape)
+# print(imgs.dtype)
+# labels = model.discriminator.forward(imgs)

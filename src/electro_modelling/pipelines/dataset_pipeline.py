@@ -4,6 +4,7 @@ from electro_modelling.datasets.signal_processing import SignalOperators
 
 import torch
 from tqdm import tqdm
+import numpy as np
 
 class TechnoDatasetPipeline:
     def __init__(self,dataset_location="/fast-1/tmp/techno.dat",save_location="/fast-1/tmp/techno_spectrograms.pkl"):
@@ -20,7 +21,7 @@ class TechnoDatasetPipeline:
             signal = self.dataset.__getitem__(i)
             STFT_mel = self.operator.forward(signal)
             spectrograms.append(STFT_mel)
-        
+        spectrograms = np.array(spectrograms)
         tensor_spectrograms = torch.tensor(spectrograms)
         
         save_pickle(tensor_spectrograms,self.save_location)

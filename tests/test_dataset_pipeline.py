@@ -1,8 +1,8 @@
 import sys
 sys.path.append('./src/')
 
-# import os 
-# os.chdir(r'C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\electro-modelling\src')
+import os 
+os.chdir(r'C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\electro-modelling\src')
 from electro_modelling.pipelines.dataset_pipeline import TechnoDatasetPipeline
 from electro_modelling.helpers.helpers_audio import plot_spectrogram
 from electro_modelling.datasets.techno_dataloader import techno_data_loader
@@ -22,7 +22,7 @@ pipeline = TechnoDatasetPipeline(dataset_location=dataset_location,save_location
 
 
 #Run the dataset process
-pipeline.process_dataset(nb_samples = 32*2)
+pipeline.process_dataset(nb_samples = 32)
 
 # #Check if it worked
 # data_loader = techno_data_loader(32,save_location)

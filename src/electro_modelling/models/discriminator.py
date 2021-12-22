@@ -34,35 +34,35 @@ class Discriminator(nn.Module):
                 self.make_disc_block_techno(input_channels=hidden_dim, output_channels=hidden_dim, kernel_size=3, stride=1),
                 self.make_disc_block_techno(input_channels=hidden_dim, output_channels=hidden_dim, kernel_size=3, stride=1),
                 
-                nn.Conv2d(hidden_dim,hidden_dim, kernel_size=3, stride=2),
+                nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim, output_channels=hidden_dim*2, kernel_size=3, stride=1),
                 self.make_disc_block_techno(input_channels=hidden_dim*2, output_channels=hidden_dim*2, kernel_size=3, stride=1),
                 
-                nn.Conv2d(hidden_dim*2,hidden_dim*2, kernel_size=3, stride=2),
+                nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*2, output_channels=hidden_dim*4, kernel_size=3, stride=1),
-                self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*4, kernel_size=3, stride=1),
+                # self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*4, kernel_size=3, stride=1),
                 
-                nn.Conv2d(hidden_dim*4,hidden_dim*4, kernel_size=3, stride=2),
+                nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
                 
-                nn.Conv2d(hidden_dim*8,hidden_dim*8, kernel_size=3, stride=2),
-                
-                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                
-                nn.Conv2d(hidden_dim*8,hidden_dim*8, kernel_size=3, stride=2),
+                nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
                 
-                nn.Conv2d(hidden_dim*8,hidden_dim*8, kernel_size=3, stride=2,padding=(1,1)),               
+                nn.AvgPool2d(kernel_size=2, stride=2),
+                
+                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                
+                nn.AvgPool2d(kernel_size=2, stride=2),               
                 # nn.BatchNorm2d(num_features=hidden_dim*8),
                 self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),               
+                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),               
                 nn.Conv2d(hidden_dim * 8, 1, kernel_size=(8,2), stride=1)
             )
                               

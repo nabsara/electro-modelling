@@ -96,7 +96,7 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
 )
 def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
     # Signal processing parameters
-    nmels = int(nfft/2+1)
+    nmels = int(nfft/2)
     # File locations
     dataset_location = os.path.join(data_path, 'techno.dat')
     save_location = os.path.join(save_dir, 'techno_spectrograms.pkl')

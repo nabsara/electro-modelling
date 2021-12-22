@@ -2,6 +2,7 @@ import os
 import time
 import torch
 import torch.nn as nn
+from torch.utils.data import dataset
 from tqdm import tqdm
 from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
@@ -10,6 +11,7 @@ from electro_modelling.models.discriminator import Discriminator
 from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
+from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag
 
 
 class DCGAN:
@@ -30,7 +32,7 @@ class DCGAN:
             self.discriminator.apply(self.initialize_weights)
 
         # TODO: add fixed noise for model evaluation and to add to tensorboard
-        self.fixed_noise = self.get_noise(64)
+        self.fixed_noise = self.get_noise(4)
 
     def get_noise(self, n_samples):
         """
@@ -166,10 +168,17 @@ class DCGAN:
                         make_grid(fake),
                         epoch * len(train_dataloader) + cur_step
                     )
-                    if show_fig:
-                        show_tensor_images(fake)
                     with torch.no_grad():
                         fake = self.generator(self.fixed_noise).detach().cpu()
+                        
+                        if show_fig:
+                            if dataset=='techno':
+                                for STFT_amp in fake.numpy():
+                                    plot_spectrogram_mag(STFT_amp,figsize=(12,6))
+                            else:
+                                show_tensor_images(fake)
+                            
+                            
                     img_list.append(make_grid(fake, padding=2, normalize=True))
 
                 cur_step += 1

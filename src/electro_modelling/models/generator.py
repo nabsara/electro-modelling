@@ -43,16 +43,16 @@ class Generator(nn.Module):
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),
-            self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),            
+            # self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),            
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),
             self.make_gen_block_techno(input_channels=hidden_dim *2, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),
@@ -119,8 +119,8 @@ class Generator(nn.Module):
 
         return nn.Sequential(
             nn.Conv2d(input_channels, output_channels, kernel_size, stride=stride,padding=padding),
+            nn.BatchNorm2d(num_features=output_channels),
             nn.LeakyReLU(negative_slope=0.2,inplace=True),
-            nn.BatchNorm2d(num_features=output_channels)
         )
     
     def forward(self, x):
@@ -141,3 +141,10 @@ class Generator(nn.Module):
         output = self.model(noise)
         # output = output.view(x.size(0), 1, 28, 28)
         return output
+    
+# class pixel_norm(nn.Module):
+#     def __init__(self):
+#         super().__init__()
+#     def forward(self,x,eps=1e-8):
+#         mean = torch.mean(x**2,axis = 3,keepdim=True)
+#         return()
