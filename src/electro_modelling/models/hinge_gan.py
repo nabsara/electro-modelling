@@ -38,9 +38,9 @@ lr=learning_rate, betas=(beta_1, beta_2))
         self.criterion2 = MyLinearLoss()
         
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
-        disc_fake_loss = self.criterion1(disc_fake_pred,
+        disc_fake_loss = -self.criterion1(disc_fake_pred,
 torch.zeros_like(disc_fake_pred))
-        disc_real_loss = self.criterion1(disc_real_pred,
+        disc_real_loss = -self.criterion1(disc_real_pred,
 torch.ones_like(disc_real_pred))
         disc_loss = (disc_fake_loss + disc_real_loss) /2
         return disc_loss
