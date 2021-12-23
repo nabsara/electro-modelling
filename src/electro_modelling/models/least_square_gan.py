@@ -21,12 +21,12 @@ class LeastSquareGAN(DCGAN):
 #         self.criterion = nn.BCELoss()
 
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
-        disc_fake_loss = 0.5 * torch.mean((disc_fake_pred-torch.ones_like(disc_fake_pred))**2)
+        disc_fake_loss = 0.5 * torch.mean((disc_fake_pred+torch.ones_like(disc_fake_pred))**2)
         disc_real_loss = 0.5 * torch.mean((disc_real_pred-torch.zeros_like(disc_real_pred))**2)
         disc_loss = (disc_fake_loss + disc_real_loss) /2
         return disc_loss
 
 
-    def _compute_gen_loss(self, disc_real_pred, disc_fake_pred):
-        gen_loss = 0.5 * torch.mean((disc_fake_pred-torch.ones_like(disc_real_pred))**2)
+    def _compute_gen_loss(self, disc_fake_pred):
+        gen_loss = 0.5 * torch.mean((disc_fake_pred+torch.ones_like(disc_fake_pred))**2)
         return gen_loss
