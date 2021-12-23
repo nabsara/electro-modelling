@@ -21,15 +21,15 @@ class LeastSquareGAN(DCGAN):
         self.criterion = nn.MSELoss()
 
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
-        disc_fake_loss = self.criterion1(disc_fake_pred,
+        disc_fake_loss = self.criterion(disc_fake_pred,
 -torch.ones_like(disc_fake_pred))
-        disc_real_loss = self.criterion1(disc_real_pred,
+        disc_real_loss = self.criterion(disc_real_pred,
 torch.ones_like(disc_real_pred))
         disc_loss = (disc_fake_loss + disc_real_loss) /2
         return disc_loss
 
 
     def _compute_gen_loss(self, disc_fake_pred):
-        gen_loss = self.criterion2(disc_fake_pred,
+        gen_loss = self.criterion(disc_fake_pred,
 -torch.ones_like(disc_fake_pred))
         return gen_loss
