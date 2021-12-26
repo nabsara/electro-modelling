@@ -46,13 +46,26 @@ from electro_modelling.pipelines.dataset_pipeline import TechnoDatasetPipeline
     default=500,
     help="Number of iterations between each training stats display",
 )
-@click.option('--show', is_flag=True)
-def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+@click.option("--show", is_flag=True)
+def train_mnist_gan(
+    model,
+    data_dir,
+    models_dir,
+    batch_size,
+    z_dims,
+    n_epochs,
+    learning_rate,
+    k_disc_steps,
+    display_step,
+    show,
+):
     """
-    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+    CLI to train a specified model on MNIST dataset given the input
+    hyper-parameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN),
+        'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
@@ -63,10 +76,8 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
         k_disc_steps=k_disc_steps,
         n_epochs=n_epochs,
         display_step=display_step,
-        show_fig=show
+        show_fig=show,
     )
-
-
 
 
 @click.option(
@@ -91,15 +102,19 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
 )
 @click.option(
     "--nb_samples",
-    default=None,
+    default=-1,
     help="Sampling Rate",
 )
 def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
-    # Signal processing parameters
-    nmels = int(nfft/2)
     # File locations
-    dataset_location = os.path.join(data_path, 'techno.dat')
-    save_location = os.path.join(save_dir, 'techno_spectrograms.pkl')
-    # Instanciate pipeline
-    pipeline = TechnoDatasetPipeline(nfft, nmels, sr, dataset_location=dataset_location, save_location=save_location)
+    dataset_location = os.path.join(data_path, "techno.dat")
+    save_location = os.path.join(save_dir, "techno_spectrograms.pkl")
+
+    # Instantiate pipeline
+    pipeline = TechnoDatasetPipeline(
+        nfft=nfft,
+        sr=sr,
+        dataset_location=dataset_location,
+        save_location=save_location
+    )
     pipeline.process_dataset(nb_samples=nb_samples)

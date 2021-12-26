@@ -1,10 +1,8 @@
-import torch
 import numpy as np
 from torch.utils.data import Dataset
 
 
 class TechnoDatasetWav(Dataset):
-
     def __init__(self, dat_location="/fast-1/tmp/techno.dat") -> None:
         super().__init__()
 
@@ -20,17 +18,17 @@ class TechnoDatasetWav(Dataset):
     def __getitem__(self, index):
         # return torch.from_numpy(np.copy(self.samples[index])).float()
         return np.copy(self.samples[index])
-    
-    
+
+
 class TechnoDatasetSpectrogram(Dataset):
-    def __init__(self, tensors,transform=None,phase_method = 'griff'):
+    def __init__(self, tensors, transform=None, phase_method="griff"):
         super().__init__()
-        if phase_method=='griff':
-            self.tensors = tensors[:,:1,:,:]
- 
-        elif phase_method == 'IF':
+        if phase_method == "griff":
+            self.tensors = tensors[:, :1, :, :]
+
+        elif phase_method == "IF":
             self.tensors = tensors
-        self.tensors=self.tensors.float()
+        self.tensors = self.tensors.float()
         self.transform = transform
 
     def __len__(self):
@@ -40,4 +38,4 @@ class TechnoDatasetSpectrogram(Dataset):
         x = self.tensors[index]
         if self.transform:
             x = self.transform(x)
-        return(x)
+        return x
