@@ -174,7 +174,7 @@ class DCGAN:
                         if show_fig:
                             if self.dataset=='techno':
                                 for STFT_amp in fake.numpy():
-                                    plot_spectrogram_mag(STFT_amp[0],figsize=(12,6))
+                                    plot_spectrogram_mag(STFT_amp[0],figsize=(10,4))
                             else:
                                 show_tensor_images(fake)
                             
