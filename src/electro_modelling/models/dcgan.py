@@ -11,13 +11,13 @@ from electro_modelling.models.discriminator import Discriminator
 from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
-from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag
+from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag,image_grid_spectrograms
 from electro_modelling.datasets.signal_processing import SignalOperators
 
 
 class DCGAN:
 
-    def __init__(self,z_dim, model_name, init_weights=True, dataset='MNIST',img_chan=1):
+    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1):
         self.z_dim = z_dim
         self.dataset = dataset
         self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32).to(device=settings.device)
@@ -27,7 +27,6 @@ class DCGAN:
 
         self.gen_opt = None
         self.disc_opt = None
-        
         if dataset == 'techno':
             self.operator = SignalOperators(1024,512,16000)
 
@@ -58,6 +57,7 @@ class DCGAN:
         """
         return torch.randn(n_samples, self.z_dim, device=settings.device)
     
+        
     def get_sounds(self,fakes):
         sounds_list = []
         for i,fake in enumerate(fakes):
@@ -101,7 +101,7 @@ class DCGAN:
         start = time.time()
         # defining a SummaryWriter to write information to TensorBoard during training
         writer = SummaryWriter(os.path.join(
-            models_dir, f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}")
+            models_dir, f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime()))
         )
 
         # define generator and discriminator loss and optimizers
@@ -163,10 +163,18 @@ class DCGAN:
                 if it % display_step == 0 or ((epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)):
                     with torch.no_grad():
                         fake = self.generator(self.fixed_noise).detach().cpu()
+                        if show_fig:
+                            if self.dataset=='techno':
+                                imgs = fake*10.05-3.76
+                                figure = image_grid_spectrograms(imgs)
+                                figure.show()
+                            else:
+                                show_tensor_images(fake)
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
                         f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tD_loss: {mean_disc_loss}"
                     )
+                    
                     # Add training losses and fake images evolution to tensorboard
                     writer.add_scalar(
                         "training generator loss",
@@ -178,17 +186,20 @@ class DCGAN:
                         d_loss / display_step,
                         epoch * len(train_dataloader) + cur_step
                     )
-                    writer.add_image(
-                        "generated_images",
-                        make_grid(fake),
-                        epoch * len(train_dataloader) + cur_step
-                    )
-                    if show_fig:
-                        if self.dataset=='techno':
-                            for STFT_amp in fake.numpy():
-                                plot_spectrogram_mag(STFT_amp[0],figsize=(10,4))
-                        else:
-                            show_tensor_images(fake)
+                    if self.dataset == 'MNIST':
+                        writer.add_image(
+                            "generated_images",
+                            make_grid(fake),
+                            epoch * len(train_dataloader) + cur_step
+                        )
+                    if self.dataset=='techno':
+                        imgs = fake*10.05-3.76
+                        sounds_tensor = self.get_sounds(imgs)
+                        figure = image_grid_spectrograms(imgs)
+                        
+                        writer.add_figure('generated_images',figure, epoch * len(train_dataloader) + cur_step)
+                        for j in range(sounds_tensor.shape[0]):
+                            writer.add_audio('generated_sound/'+str(j), sounds_tensor[j],global_step = epoch * len(train_dataloader) + cur_step,sample_rate = 16000)
                             
                     img_list.append(make_grid(fake, padding=2, normalize=True))
 
