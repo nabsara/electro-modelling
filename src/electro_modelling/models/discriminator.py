@@ -119,6 +119,7 @@ class Discriminator(nn.Module):
         '''
         return nn.Sequential(
             nn.Conv2d(input_channels, output_channels, kernel_size, stride=stride,padding='same'),
+            # nn.BatchNorm2d(num_features=output_channels),
             nn.LeakyReLU(negative_slope=0.2, inplace=True)
         )        
 

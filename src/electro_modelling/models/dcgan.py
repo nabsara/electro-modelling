@@ -16,7 +16,7 @@ from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag
 
 class DCGAN:
 
-    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1):
+    def __init__(self,z_dim, model_name, init_weights=True, dataset='MNIST',img_chan=1):
         self.z_dim = z_dim
         self.dataset = dataset
         self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32).to(device=settings.device)
@@ -148,6 +148,8 @@ class DCGAN:
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
                 if it % display_step == 0 or ((epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)):
+                    with torch.no_grad():
+                        fake = self.generator(self.fixed_noise).detach().cpu()
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
                         f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tD_loss: {mean_disc_loss}"
@@ -168,16 +170,12 @@ class DCGAN:
                         make_grid(fake),
                         epoch * len(train_dataloader) + cur_step
                     )
-                    with torch.no_grad():
-                        fake = self.generator(self.fixed_noise).detach().cpu()
-                        
-                        if show_fig:
-                            if self.dataset=='techno':
-                                for STFT_amp in fake.numpy():
-                                    plot_spectrogram_mag(STFT_amp[0],figsize=(10,4))
-                            else:
-                                show_tensor_images(fake)
-                            
+                    if show_fig:
+                        if self.dataset=='techno':
+                            for STFT_amp in fake.numpy():
+                                plot_spectrogram_mag(STFT_amp[0],figsize=(10,4))
+                        else:
+                            show_tensor_images(fake)
                             
                     img_list.append(make_grid(fake, padding=2, normalize=True))
 
