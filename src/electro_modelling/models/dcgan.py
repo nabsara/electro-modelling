@@ -12,6 +12,7 @@ from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
 from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag
+from electro_modelling.datasets.signal_processing import SignalOperators
 
 
 class DCGAN:
@@ -26,6 +27,9 @@ class DCGAN:
 
         self.gen_opt = None
         self.disc_opt = None
+        
+        if dataset == 'techno':
+            self.operator = SignalOperators(1024,512,16000)
 
         if init_weights:
             self.generator.apply(self.initialize_weights)
@@ -53,6 +57,15 @@ class DCGAN:
             the noise tensor of shape (n_samples, z_dim)
         """
         return torch.randn(n_samples, self.z_dim, device=settings.device)
+    
+    def get_sounds(self,fakes):
+        sounds_list = []
+        for i,fake in enumerate(fakes):
+            STFT_mel_amp = fake[0].numpy()
+            sound = self.operator.backward(STFT_mel_amp)
+            sounds_list.append(torch.tensor(sound))
+        sounds_tensor=torch.stack(sounds_list)
+        return (sounds_tensor)
 
     @staticmethod
     def initialize_weights(m):

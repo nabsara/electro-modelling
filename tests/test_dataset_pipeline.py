@@ -25,7 +25,7 @@ pipeline = TechnoDatasetPipeline(dataset_location=dataset_location,save_location
 pipeline.process_dataset(nb_samples = 32)
 
 # #Check if it worked
-# data_loader = techno_data_loader(32,save_location)
+data_loader = techno_data_loader(32,save_location)
 
 # for i,data in enumerate(data_loader):
 #     stft_mel = data[0]

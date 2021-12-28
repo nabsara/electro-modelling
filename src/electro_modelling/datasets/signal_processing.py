@@ -32,7 +32,7 @@ class SignalOperators:
         # If the chosen phase reconstruction method is the Griffin-Lim algorithm, needed parameters
         if self.phase_rec_method == 'Griffin-Lim':
             self.griffin_phase_init = None
-            self.griffin_nb_iterations = 200
+            self.griffin_nb_iterations = 50
             self.griffin_required_loss = False
         
     def forward(self,signal):
@@ -53,6 +53,7 @@ class SignalOperators:
             raise AssertionError('This phase reconstruction method is not implemented.')
         STFT = STFT_amp * np.exp(1j*STFT_phase)
         signal = self.rebuild_signal(STFT)
+        signal = signal/np.max(abs(signal))
         return signal
         
 
