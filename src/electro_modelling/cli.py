@@ -108,8 +108,13 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 
 @click.argument("model")
 @click.option(
+    "--dataset_file",
+    default="techno_spectrograms_nb_samples_64.pkl",
+    help="Name of the dataset pickle file",
+)
+@click.option(
     "--data_dir",
-    default=os.path.join(settings.DATA_DIR, "techno_spectrograms_nb_samples_64.pkl"),
+    default=settings.DATA_DIR,
     help="Absolute path to data directory",
 )
 @click.option(
@@ -148,7 +153,7 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
     help="Number of iterations between each training stats display",
 )
 @click.option('--show', is_flag=True)
-def train_techno_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+def train_techno_gan(model, dataset_file, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
     """
     CLI to train a specified model on MNIST dataset given the input hyperparameters.
 
@@ -158,7 +163,14 @@ def train_techno_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, 
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
     print(locals())
-    pipeline = TechnoPipeline(model, data_dir, models_dir, batch_size, z_dims, phase_method='griff')
+    pipeline = TechnoPipeline(
+        model_name=model,
+        data_dir=os.path.join(data_dir, dataset_file),
+        models_dir=models_dir,
+        batch_size=batch_size,
+        z_dims=z_dims,
+        phase_method='griff'
+    )
     pipeline.train(
         learning_rate=learning_rate,
         k_disc_steps=k_disc_steps,
