@@ -35,7 +35,7 @@ class TechnoDatasetPipeline:
             signal = self.dataset[i]
             STFT_mel = self.operator.forward(signal)
             spectrograms.append(STFT_mel)
-        spectrograms = np.asarray(spectrograms)
+        spectrograms = np.asarray(spectrograms).astype("float32")
         tensor_spectrograms = torch.tensor(spectrograms)
 
         save_pickle(tensor_spectrograms, self.save_location)
