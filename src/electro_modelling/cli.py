@@ -109,7 +109,7 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 @click.argument("model")
 @click.option(
     "--dataset_file",
-    default="techno_spectrograms_nb_samples_64.pkl",
+    default="techno.dat",
     help="Name of the dataset pickle file",
 )
 @click.option(
@@ -121,6 +121,11 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
     "--models_dir",
     default=settings.MODELS_DIR,
     help="Absolute path to models directory",
+)
+@click.option(
+    "--nmels",
+    default=512,
+    help="Number of mel frequencies",
 )
 @click.option(
     "--batch_size",
@@ -153,7 +158,7 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
     help="Number of iterations between each training stats display",
 )
 @click.option('--show', is_flag=True)
-def train_techno_gan(model, dataset_file, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
     """
     CLI to train a specified model on MNIST dataset given the input hyperparameters.
 
@@ -169,6 +174,7 @@ def train_techno_gan(model, dataset_file, data_dir, models_dir, batch_size, z_di
         models_dir=models_dir,
         batch_size=batch_size,
         z_dims=z_dims,
+        nmels=nmels,
         phase_method='griff'
     )
     pipeline.train(

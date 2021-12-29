@@ -17,18 +17,20 @@ from electro_modelling.datasets.signal_processing import SignalOperators
 
 class DCGAN:
 
-    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1):
+    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1,operator=None):
         self.z_dim = z_dim
         self.dataset = dataset
-        self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32).to(device=settings.device)
-        self.discriminator = Discriminator(dataset,img_chan, hidden_dim=32).to(device=settings.device)
+        self.operator = operator
+        self.nmel_ratio = int(operator.nmels/operator.nb_trames)
+        self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32,nmel_ratio=self.nmel_ratio).to(device=settings.device)
+        self.discriminator = Discriminator(dataset,img_chan, hidden_dim=32,nmel_ratio=self.nmel_ratio).to(device=settings.device)
 
         self.model_name = model_name
 
         self.gen_opt = None
         self.disc_opt = None
-        if dataset == 'techno':
-            self.operator = SignalOperators(1024,512,16000)
+        
+        
 
         if init_weights:
             self.generator.apply(self.initialize_weights)
@@ -55,7 +57,9 @@ class DCGAN:
         -------
             the noise tensor of shape (n_samples, z_dim)
         """
-        return torch.randn(n_samples, self.z_dim, device=settings.device)
+        noise = torch.randn(n_samples, self.z_dim, device=settings.device)
+        norm = torch.norm(noise,dim=1,keepdim=True)
+        return noise/norm
     
         
     def get_sounds(self,fakes):
@@ -165,7 +169,7 @@ class DCGAN:
                         fake = self.generator(self.fixed_noise).detach().cpu()
                         if show_fig:
                             if self.dataset=='techno':
-                                imgs = fake*10.05-3.76
+                                imgs = fake
                                 figure = image_grid_spectrograms(imgs)
                                 figure.show()
                             else:
@@ -193,7 +197,7 @@ class DCGAN:
                             epoch * len(train_dataloader) + cur_step
                         )
                     if self.dataset=='techno':
-                        imgs = fake*10.05-3.76
+                        imgs = fake
                         sounds_tensor = self.get_sounds(imgs)
                         figure = image_grid_spectrograms(imgs)
                         

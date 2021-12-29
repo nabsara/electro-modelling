@@ -11,13 +11,14 @@ class WGANGP(DCGAN):
     i.e. self.discriminator, self.disc_opt,
     """
 
-    def __init__(self, z_dim, dataset, img_chan):
+    def __init__(self, z_dim, dataset, img_chan,operator=None):
         super().__init__(
             z_dim=z_dim,
             model_name="w_dcgan_gp",
             init_weights=True,
             dataset=dataset,
-            img_chan=img_chan
+            img_chan=img_chan,
+            operator=operator
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):
