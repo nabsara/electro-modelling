@@ -1,7 +1,9 @@
 import os
 import time
+import numpy as np 
 import torch
 import torch.nn as nn
+from torch.utils.data import dataset
 from tqdm import tqdm
 from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
@@ -10,26 +12,36 @@ from electro_modelling.models.discriminator import Discriminator
 from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
+from electro_modelling.helpers.helpers_audio import plot_spectrogram_mag,image_grid_spectrograms
+from electro_modelling.datasets.signal_processing import SignalOperators
 
 
 class DCGAN:
 
-    def __init__(self, z_dim, model_name, init_weights=True):
+    def __init__(self,z_dim, model_name, init_weights=True,dataset='MNIST',img_chan=1,operator=None):
         self.z_dim = z_dim
-        self.generator = Generator(self.z_dim, img_chan=1, hidden_dim=64).to(device=settings.device)
-        self.discriminator = Discriminator(img_chan=1, hidden_dim=16).to(device=settings.device)
+        self.dataset = dataset
+        self.operator = operator
+        self.nmel_ratio = int(operator.nmels/operator.nb_trames)
+        self.generator = Generator(dataset,self.z_dim, img_chan, hidden_dim=32,nmel_ratio=self.nmel_ratio).to(device=settings.device)
+        self.discriminator = Discriminator(dataset,img_chan, hidden_dim=32,nmel_ratio=self.nmel_ratio).to(device=settings.device)
 
         self.model_name = model_name
-
+        if self.model_name == 'wgan':
+            self.nb_loss_disc = 5
+        else:
+            self.nb_loss_disc = 3
         self.gen_opt = None
         self.disc_opt = None
+        
+        
 
         if init_weights:
             self.generator.apply(self.initialize_weights)
             self.discriminator.apply(self.initialize_weights)
 
         # TODO: add fixed noise for model evaluation and to add to tensorboard
-        self.fixed_noise = self.get_noise(64)
+        self.fixed_noise = self.get_noise(4)
 
     def get_noise(self, n_samples):
         """
@@ -49,7 +61,19 @@ class DCGAN:
         -------
             the noise tensor of shape (n_samples, z_dim)
         """
-        return torch.randn(n_samples, self.z_dim, device=settings.device)
+        noise = torch.randn(n_samples, self.z_dim, device=settings.device)
+        norm = torch.norm(noise,dim=1,keepdim=True)
+        return noise/norm
+    
+        
+    def get_sounds(self,fakes):
+        sounds_list = []
+        for i,fake in enumerate(fakes):
+            STFT_mel_amp = fake[0].numpy()
+            sound = self.operator.backward(STFT_mel_amp)
+            sounds_list.append(torch.tensor(sound))
+        sounds_tensor=torch.stack(sounds_list)
+        return (sounds_tensor)
 
     @staticmethod
     def initialize_weights(m):
@@ -85,7 +109,7 @@ class DCGAN:
         start = time.time()
         # defining a SummaryWriter to write information to TensorBoard during training
         writer = SummaryWriter(os.path.join(
-            models_dir, f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}")
+            models_dir, f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime()))
         )
 
         # define generator and discriminator loss and optimizers
@@ -100,11 +124,17 @@ class DCGAN:
             cur_step = 0
             g_loss = 0
             d_loss = 0
-            for real, _ in tqdm(train_dataloader):
+            d_losses = np.zeros(self.nb_loss_disc)
+            d_display_losses = np.zeros(self.nb_loss_disc)
+            g_display_loss = 0
+            for real in tqdm(train_dataloader):
+                if self.dataset=='MNIST':
+                    _,real = real
                 cur_batch_size = len(real)
                 real = real.to(settings.device)
 
-                mean_disc_loss = 0
+                mean_disc_losses = np.zeros(self.nb_loss_disc)
+
                 # train discriminator for k steps:
                 for _ in range(k_disc_steps):
                     self.disc_opt.zero_grad()
@@ -115,16 +145,16 @@ class DCGAN:
                     # compute discriminator loss on fake and real data
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
-                    disc_loss = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
-                    mean_disc_loss += disc_loss.item() / k_disc_steps
-
+                    disc_loss,losses,losses_names = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
+                    mean_disc_losses += np.array(losses)/k_disc_steps
                     # update discriminator gradients
                     disc_loss.backward(retain_graph=True)
                     # update discriminator optimizer
                     self.disc_opt.step()
                 # keep track of the discriminator loss
-                d_loss += mean_disc_loss
-
+                d_losses += mean_disc_losses
+                d_display_losses += mean_disc_losses
+                d_loss = d_losses[0]
                 # train generator:
                 self.gen_opt.zero_grad()
                 # generate fake data from latent vectors
@@ -139,36 +169,55 @@ class DCGAN:
                 self.gen_opt.step()
                 # keep track of the average generator loss
                 g_loss += gen_loss.item()
-
+                g_display_loss += gen_loss.item()
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
                 if it % display_step == 0 or ((epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)):
+                    
+                    with torch.no_grad():
+                        fake = self.generator(self.fixed_noise).detach().cpu()
+                        if show_fig:
+                            if self.dataset=='techno':
+                                imgs = fake
+                                figure = image_grid_spectrograms(imgs)
+                                figure.show()
+                            else:
+                                show_tensor_images(fake)
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
-                        f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tD_loss: {mean_disc_loss}"
+                        f"\tTime: {time.time() - start} (s)\tG_loss: {g_display_loss / display_step}\tTotal_D_loss: {d_display_losses[0] / display_step}"
                     )
+                    
                     # Add training losses and fake images evolution to tensorboard
                     writer.add_scalar(
                         "training generator loss",
-                        g_loss / display_step,
+                        g_display_loss / display_step,
                         epoch * len(train_dataloader) + cur_step
                     )
-                    writer.add_scalar(
-                        "training discriminator loss",
-                        d_loss / display_step,
-                        epoch * len(train_dataloader) + cur_step
-                    )
-                    writer.add_image(
-                        "generated_images",
-                        make_grid(fake),
-                        epoch * len(train_dataloader) + cur_step
-                    )
-                    if show_fig:
-                        show_tensor_images(fake)
-                    with torch.no_grad():
-                        fake = self.generator(self.fixed_noise).detach().cpu()
+                    for loss,name in zip(d_display_losses,losses_names):
+                        writer.add_scalar(
+                            'Discriminator Losses/'+name,
+                            loss / display_step,
+                            epoch * len(train_dataloader) + cur_step
+                        )
+                    if self.dataset == 'MNIST':
+                        writer.add_image(
+                            "generated_images",
+                            make_grid(fake),
+                            epoch * len(train_dataloader) + cur_step
+                        )
+                    if self.dataset=='techno':
+                        imgs = fake
+                        sounds_tensor = self.get_sounds(imgs)
+                        figure = image_grid_spectrograms(imgs)
+                        
+                        writer.add_figure('generated_images',figure, epoch * len(train_dataloader) + cur_step)
+                        for j in range(sounds_tensor.shape[0]):
+                            writer.add_audio('generated_sound/'+str(j), sounds_tensor[j],global_step = epoch * len(train_dataloader) + cur_step,sample_rate = 16000)
+                            
                     img_list.append(make_grid(fake, padding=2, normalize=True))
-
+                    d_display_losses = np.zeros(self.nb_loss_disc)
+                    g_display_loss = 0
                 cur_step += 1
                 it += 1
             # keep track on batch mean losses evolution through epochs
