@@ -125,6 +125,8 @@ class DCGAN:
             g_loss = 0
             d_loss = 0
             d_losses = np.zeros(self.nb_loss_disc)
+            d_display_losses = np.zeros(self.nb_loss_disc)
+            g_display_loss = 0
             for real in tqdm(train_dataloader):
                 if self.dataset=='MNIST':
                     _,real = real
@@ -132,6 +134,7 @@ class DCGAN:
                 real = real.to(settings.device)
 
                 mean_disc_losses = np.zeros(self.nb_loss_disc)
+
                 # train discriminator for k steps:
                 for _ in range(k_disc_steps):
                     self.disc_opt.zero_grad()
@@ -143,13 +146,14 @@ class DCGAN:
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
                     disc_loss,losses,losses_names = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
-                    mean_disc_losses += np.array(losses)
+                    mean_disc_losses += np.array(losses)/k_disc_steps
                     # update discriminator gradients
                     disc_loss.backward(retain_graph=True)
                     # update discriminator optimizer
                     self.disc_opt.step()
                 # keep track of the discriminator loss
                 d_losses += mean_disc_losses
+                d_display_losses += mean_disc_losses
                 d_loss = d_losses[0]
                 # train generator:
                 self.gen_opt.zero_grad()
@@ -165,10 +169,11 @@ class DCGAN:
                 self.gen_opt.step()
                 # keep track of the average generator loss
                 g_loss += gen_loss.item()
-
+                g_display_loss += gen_loss.item()
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
                 if it % display_step == 0 or ((epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)):
+                    
                     with torch.no_grad():
                         fake = self.generator(self.fixed_noise).detach().cpu()
                         if show_fig:
@@ -180,16 +185,16 @@ class DCGAN:
                                 show_tensor_images(fake)
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
-                        f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tTotal_D_loss: {mean_disc_losses[0]}"
+                        f"\tTime: {time.time() - start} (s)\tG_loss: {g_display_loss / display_step}\tTotal_D_loss: {d_display_losses[0] / display_step}"
                     )
                     
                     # Add training losses and fake images evolution to tensorboard
                     writer.add_scalar(
                         "training generator loss",
-                        g_loss / display_step,
+                        g_display_loss / display_step,
                         epoch * len(train_dataloader) + cur_step
                     )
-                    for loss,name in zip(d_losses,losses_names):
+                    for loss,name in zip(d_display_losses,losses_names):
                         writer.add_scalar(
                             'Discriminator Losses/'+name,
                             loss / display_step,
@@ -211,7 +216,8 @@ class DCGAN:
                             writer.add_audio('generated_sound/'+str(j), sounds_tensor[j],global_step = epoch * len(train_dataloader) + cur_step,sample_rate = 16000)
                             
                     img_list.append(make_grid(fake, padding=2, normalize=True))
-
+                    d_display_losses = np.zeros(self.nb_loss_disc)
+                    g_display_loss = 0
                 cur_step += 1
                 it += 1
             # keep track on batch mean losses evolution through epochs
