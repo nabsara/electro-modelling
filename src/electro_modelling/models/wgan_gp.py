@@ -21,7 +21,7 @@ class WGANGP(DCGAN):
             operator=operator
         )
 
-    def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.9):
+    def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.99):
         # TODO: Check with RMS Prop cf. W-GAN with weights clipping paper
         self.gen_opt = torch.optim.Adam(self.generator.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
         self.disc_opt = torch.optim.Adam(self.discriminator.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
