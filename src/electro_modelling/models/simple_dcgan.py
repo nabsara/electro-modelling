@@ -23,6 +23,24 @@ class SimpleDCGAN(DCGAN):
         self.criterion = nn.BCEWithLogitsLoss()
 
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):
+        """
+        Return the loss of a critic given the critic's scores for fake and real images.
+
+        Parameters
+        ----------
+        real :
+            current batch of real images
+        fake :
+            current batch of fake images
+        disc_real_pred :
+            the critic's scores of the real images
+        disc_fake_pred :
+            the critic's scores of the fake images
+
+        Returns
+        -------
+            a scalar for the critic's loss for the current batch
+        """
         disc_fake_loss = self.criterion(disc_fake_pred, torch.zeros_like(disc_fake_pred))
         disc_real_loss = self.criterion(disc_real_pred, torch.ones_like(disc_real_pred))
         # compute the global discriminator loss as the mean between fake and real batches losses
@@ -32,5 +50,17 @@ class SimpleDCGAN(DCGAN):
         return losses,losses_names
 
     def _compute_gen_loss(self, disc_fake_pred):
+        """
+        Return the loss of a generator given the critic's scores of the generator's fake images.
+
+        Parameters
+        ----------
+        disc_fake_pred :
+            the critic's scores of the fake images
+
+        Returns
+        -------
+            a scalar for the generator loss for the current batch
+        """
         gen_loss = self.criterion(disc_fake_pred, torch.ones_like(disc_fake_pred))
         return gen_loss
