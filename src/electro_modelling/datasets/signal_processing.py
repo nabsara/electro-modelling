@@ -41,9 +41,8 @@ class SignalOperators:
             htk=True,
             norm=False,
         )
-        self.inverse_fbank = (
-            self.mel_fbank.transpose()
-        )  # TODO : check if use of transpose or Moore pseudo inverse
+        # self.inverse_fbank = self.mel_fbank.transpose() # TODO : check if use of transpose or Moore pseudo inverse
+        self.inverse_fbank = np.linalg.pinv(self.mel_fbank)  # TODO : check if use of transpose or Moore pseudo inverse
 
         # Phase reconstruction method
         self.phase_rec_method = phase_rec_method
@@ -58,12 +57,11 @@ class SignalOperators:
         STFT = self.get_stft(signal)
         STFT_mel = self.stft_to_mel(STFT)
         return STFT_mel
-
-    def backward(self, STFT_mel):
-        if (
-            self.phase_rec_method == "Griffin_Lim"
-        ):  # Use the Griffin-Lim algorithm to reconstruct the phase from a STFT amplitude
-            STFT_mel_amp = STFT_mel
+    
+    def backward(self,STFT_mel):
+        if self.phase_rec_method == 'Griffin-Lim': # Use the Griffin-Lim algorithm to reconstruct the phase from a STFT amplitude
+            STFT_mel_amp_log = STFT_mel
+            STFT_mel_amp = 10**(STFT_mel_amp_log)
             STFT_amp = self.mel_to_stft_griffin(STFT_mel_amp)
             STFT_phase = self.griffin_phase(STFT_amp)
         elif (
@@ -75,6 +73,7 @@ class SignalOperators:
             raise AssertionError("This phase reconstruction method is not implemented.")
         STFT = STFT_amp * np.exp(1j * STFT_phase)
         signal = self.rebuild_signal(STFT)
+        signal = signal/np.max(abs(signal))
         return signal
 
     def get_IF_from_phase(self, phase):
@@ -137,9 +136,7 @@ class SignalOperators:
             )  # to show the evolution of the loss (MSE between input STFT amplitude and estimated STFT amplitude) over the iterations
 
         if phase_init is None:
-            STFT_hat = STFT_amp * np.exp(
-                1j * np.random.rand(self.nfft2, self.nb_trames) * np.pi / 2
-            )
+            STFT_hat = STFT_amp*np.exp( 1j*np.random.rand(STFT_amp.shape[0], STFT_amp.shape[1])*np.pi/2)
         else:
             STFT_hat = STFT_amp * np.exp(1j * phase_init)
 

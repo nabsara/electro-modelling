@@ -1,7 +1,10 @@
 import sys
+from librosa.core.spectrum import stft
 import soundfile as sf
 sys.path.append('./src/')
 
+import os 
+os.chdir(r'C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\electro-modelling\src')
 
 from electro_modelling.datasets.techno_dataset import TechnoDatasetWav
 from electro_modelling.datasets.signal_processing import SignalOperators
@@ -28,3 +31,6 @@ stft_mel = operator.forward(audio_signal)
 
 plot_spectrogram(stft_mel[0],stft_mel[1],operator.freqs,operator.times)
 
+
+wave_rec = operator.backward(stft_mel[0])
+write_wav(data_path+'test_rec2.wav',wave_rec,sr)

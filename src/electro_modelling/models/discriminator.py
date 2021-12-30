@@ -18,7 +18,7 @@ class Discriminator(nn.Module):
         the DCGAN discriminator model
     '''
 
-    def __init__(self, dataset,img_chan, hidden_dim):
+    def __init__(self, dataset,img_chan, hidden_dim,nmel_ratio=0):
         super().__init__()
         if dataset == 'MNIST':
             hidden_dim = 16
@@ -42,28 +42,27 @@ class Discriminator(nn.Module):
                 nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*2, output_channels=hidden_dim*4, kernel_size=3, stride=1),
-                # self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*4, kernel_size=3, stride=1),
+                self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*4, kernel_size=3, stride=1),
                 
                 nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*4, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
                 
                 nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
                 
                 nn.AvgPool2d(kernel_size=2, stride=2),
                 
                 self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
+                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
                 
                 nn.AvgPool2d(kernel_size=2, stride=2),               
-                # nn.BatchNorm2d(num_features=hidden_dim*8),
                 self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),
-                # self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),               
-                nn.Conv2d(hidden_dim * 8, 1, kernel_size=(8,2), stride=1)
+                self.make_disc_block_techno(input_channels=hidden_dim*8, output_channels=hidden_dim*8, kernel_size=3, stride=1),               
+                nn.Conv2d(hidden_dim * 8, 1, kernel_size=(2*nmel_ratio,2), stride=1)
             )
                               
                 
@@ -119,6 +118,7 @@ class Discriminator(nn.Module):
         '''
         return nn.Sequential(
             nn.Conv2d(input_channels, output_channels, kernel_size, stride=stride,padding='same'),
+            # nn.BatchNorm2d(num_features=output_channels),
             nn.LeakyReLU(negative_slope=0.2, inplace=True)
         )        
 

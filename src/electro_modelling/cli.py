@@ -3,6 +3,7 @@ import os
 from electro_modelling.config import settings
 from electro_modelling.pipelines.mnist_pipeline import MNISTPipeline
 from electro_modelling.pipelines.dataset_pipeline import TechnoDatasetPipeline
+from electro_modelling.pipelines.techno_pipeline import TechnoPipeline
 
 
 @click.argument("model")
@@ -118,3 +119,83 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
         save_location=save_location
     )
     pipeline.process_dataset(nb_samples=nb_samples)
+
+
+@click.argument("model")
+@click.option(
+    "--dataset_file",
+    default="techno.dat",
+    help="Name of the dataset pickle file",
+)
+@click.option(
+    "--data_dir",
+    default=settings.DATA_DIR,
+    help="Absolute path to data directory",
+)
+@click.option(
+    "--models_dir",
+    default=settings.MODELS_DIR,
+    help="Absolute path to models directory",
+)
+@click.option(
+    "--nmels",
+    default=512,
+    help="Number of mel frequencies",
+)
+@click.option(
+    "--batch_size",
+    default=32,
+    help="Data loader batch size",
+)
+@click.option(
+    "--z_dims",
+    default=256,
+    help="Dimension of the noise vector (latent space)",
+)
+@click.option(
+    "--n_epochs",
+    default=50,
+    help="Number of epochs",
+)
+@click.option(
+    "--learning_rate",
+    default=0.0002,
+    help="Learning rate",
+)
+@click.option(
+    "--k_disc_steps",
+    default=1,
+    help="Number of training step to update only discriminator",
+)
+@click.option(
+    "--display_step",
+    default=500,
+    help="Number of iterations between each training stats display",
+)
+@click.option('--show', is_flag=True)
+def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+    """
+    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+
+    model: str
+        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+    """
+    # TODO: Add config file to deal with hyperparameters
+    # TODO: connect to tensorboard
+    print(locals())
+    pipeline = TechnoPipeline(
+        model_name=model,
+        data_dir=os.path.join(data_dir, dataset_file),
+        models_dir=models_dir,
+        batch_size=batch_size,
+        z_dims=z_dims,
+        nmels=nmels,
+        phase_method='griff'
+    )
+    pipeline.train(
+        learning_rate=learning_rate,
+        k_disc_steps=k_disc_steps,
+        n_epochs=n_epochs,
+        display_step=display_step,
+        show_fig=show
+    )

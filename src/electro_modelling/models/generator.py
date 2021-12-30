@@ -23,7 +23,7 @@ class Generator(nn.Module):
 
     """
 
-    def __init__(self,dataset,z_dim, img_chan,hidden_dim):
+    def __init__(self,dataset,z_dim, img_chan,hidden_dim,nmel_ratio=0):
         super().__init__()
         self.z_dim = z_dim
         if dataset == 'MNIST':
@@ -39,20 +39,20 @@ class Generator(nn.Module):
         elif dataset == 'techno':
             
             self.model = nn.Sequential(
-            nn.ConvTranspose2d(z_dim, hidden_dim *8, (8,2), stride=1),
+            nn.ConvTranspose2d(z_dim, hidden_dim *8, (2*nmel_ratio,2), stride=1),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
-            # self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
+            self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 8, kernel_size=(3,3), stride=1),
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *8, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),
-            # self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),            
+            self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 4, kernel_size=(3,3), stride=1),            
             nn.Upsample(scale_factor=2),
             self.make_gen_block_techno(input_channels=hidden_dim *4, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),
             self.make_gen_block_techno(input_channels=hidden_dim *2, output_channels=hidden_dim* 2, kernel_size=(3,3), stride=1),

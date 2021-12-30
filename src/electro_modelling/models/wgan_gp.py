@@ -11,14 +11,17 @@ class WGANGP(DCGAN):
     i.e. self.discriminator, self.disc_opt,
     """
 
-    def __init__(self, z_dim):
+    def __init__(self, z_dim, dataset, img_chan,operator=None):
         super().__init__(
             z_dim=z_dim,
-            model_name="w_dcgan_gp",
-            init_weights=True
+            model_name="wgan",
+            init_weights=True,
+            dataset=dataset,
+            img_chan=img_chan,
+            operator=operator
         )
 
-    def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):
+    def _init_optimizer(self, learning_rate, beta_1=0, beta_2=0.99):
         # TODO: Check with RMS Prop cf. W-GAN with weights clipping paper
         self.gen_opt = torch.optim.Adam(self.generator.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
         self.disc_opt = torch.optim.Adam(self.discriminator.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
@@ -51,7 +54,7 @@ class WGANGP(DCGAN):
         )[0]
         return gradient
 
-    def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred, c_lambda=10):
+    def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred, c_lambda=10,real_score_penalty_weight=0.001):
         """
         Return the loss of a critic given the critic's scores for fake and real images,
         the gradient penalty, and gradient penalty weight.
@@ -86,11 +89,13 @@ class WGANGP(DCGAN):
         gradient_norm = gradient.norm(2, dim=1)
         # penalize the mean squared distance of the gradient norms from 1
         gradient_penalty = torch.mean((gradient_norm - 1) * (gradient_norm - 1))
-
+        real_score_penalty = real_score_penalty_weight * disc_real_pred**2
         # compute the loss of a critic given the critic's scores for fake and real images,
         # the gradient penalty, and gradient penalty weight
-        critic_loss = torch.mean(disc_fake_pred - disc_real_pred + c_lambda * gradient_penalty)
-        return critic_loss
+        critic_loss = torch.mean(disc_fake_pred - disc_real_pred + c_lambda * gradient_penalty + real_score_penalty)
+        losses = [critic_loss.item(),torch.mean(c_lambda *gradient_penalty).item(),torch.mean(disc_fake_pred).item(),-torch.mean(disc_real_pred).item(),torch.mean(real_score_penalty).item()]
+        losses_names = ['Total discriminator loss','Gradient penalty','Fake prediction loss','Real prediction loss','Real score penalty']
+        return critic_loss,losses,losses_names
 
     def _compute_gen_loss(self, disc_fake_pred):
         """
