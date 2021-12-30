@@ -59,7 +59,7 @@ def plot_spectrogram_mag(STFT_amp,fig=None,ax=None):
 def image_grid_spectrograms(fakes):
   """Return a 5x5 grid of the MNIST images as a matplotlib figure."""
   # Create a figure to contain the plot.
-  fig,axs = plt.subplots(1,fakes.shape[0],figsize=(16.5,5))
+  fig,axs = plt.subplots(1,fakes.shape[0],figsize=(13,5))
   for i,ax in enumerate(axs):
       plot_spectrogram_mag(fakes[i][0],fig,ax)
   fig.tight_layout()

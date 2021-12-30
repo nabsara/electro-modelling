@@ -1,5 +1,6 @@
 import os
 import time
+import numpy as np 
 import torch
 import torch.nn as nn
 from torch.utils.data import dataset
@@ -26,7 +27,10 @@ class DCGAN:
         self.discriminator = Discriminator(dataset,img_chan, hidden_dim=32,nmel_ratio=self.nmel_ratio).to(device=settings.device)
 
         self.model_name = model_name
-
+        if self.model_name == 'wgan':
+            self.nb_loss_disc = 5
+        else:
+            self.nb_loss_disc = 3
         self.gen_opt = None
         self.disc_opt = None
         
@@ -120,13 +124,14 @@ class DCGAN:
             cur_step = 0
             g_loss = 0
             d_loss = 0
+            d_losses = np.zeros(self.nb_loss_disc)
             for real in tqdm(train_dataloader):
                 if self.dataset=='MNIST':
                     _,real = real
                 cur_batch_size = len(real)
                 real = real.to(settings.device)
 
-                mean_disc_loss = 0
+                mean_disc_losses = np.zeros(self.nb_loss_disc)
                 # train discriminator for k steps:
                 for _ in range(k_disc_steps):
                     self.disc_opt.zero_grad()
@@ -137,16 +142,17 @@ class DCGAN:
                     # compute discriminator loss on fake and real data
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
-                    disc_loss = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
-                    mean_disc_loss += disc_loss.item() / k_disc_steps
-
+                    losses,losses_names = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
+                    disc_loss = losses[0]
+                    mean_disc_losses += np.array([loss.item()/k_disc_steps for loss in losses])
+                    del losses
                     # update discriminator gradients
                     disc_loss.backward(retain_graph=True)
                     # update discriminator optimizer
                     self.disc_opt.step()
                 # keep track of the discriminator loss
-                d_loss += mean_disc_loss
-
+                d_losses += mean_disc_losses
+                d_loss = d_losses[0]
                 # train generator:
                 self.gen_opt.zero_grad()
                 # generate fake data from latent vectors
@@ -176,7 +182,7 @@ class DCGAN:
                                 show_tensor_images(fake)
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
-                        f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tD_loss: {mean_disc_loss}"
+                        f"\tTime: {time.time() - start} (s)\tG_loss: {gen_loss.item()}\tTotal_D_loss: {mean_disc_losses[0]}"
                     )
                     
                     # Add training losses and fake images evolution to tensorboard
@@ -185,11 +191,12 @@ class DCGAN:
                         g_loss / display_step,
                         epoch * len(train_dataloader) + cur_step
                     )
-                    writer.add_scalar(
-                        "training discriminator loss",
-                        d_loss / display_step,
-                        epoch * len(train_dataloader) + cur_step
-                    )
+                    for loss,name in zip(mean_disc_losses,losses_names):
+                        writer.add_scalar(
+                            'Discriminator Losses/'+name,
+                            loss / display_step,
+                            epoch * len(train_dataloader) + cur_step
+                        )
                     if self.dataset == 'MNIST':
                         writer.add_image(
                             "generated_images",
