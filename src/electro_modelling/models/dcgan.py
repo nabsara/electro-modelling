@@ -191,7 +191,7 @@ class DCGAN:
                         g_loss / display_step,
                         epoch * len(train_dataloader) + cur_step
                     )
-                    for loss,name in zip(mean_disc_losses,losses_names):
+                    for loss,name in zip(d_losses,losses_names):
                         writer.add_scalar(
                             'Discriminator Losses/'+name,
                             loss / display_step,
