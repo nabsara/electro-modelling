@@ -28,5 +28,7 @@ __pycache__
 build
 *.tgz
 /.changelog
+*/.ipynb_checkpoints
+*/.ipynb_checkpoints/*
 
 !.env.template
