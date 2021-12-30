@@ -93,9 +93,9 @@ class WGANGP(DCGAN):
         # compute the loss of a critic given the critic's scores for fake and real images,
         # the gradient penalty, and gradient penalty weight
         critic_loss = torch.mean(disc_fake_pred - disc_real_pred + c_lambda * gradient_penalty + real_score_penalty)
-        losses = [critic_loss,torch.mean(c_lambda *gradient_penalty),torch.mean(disc_fake_pred),-torch.mean(disc_real_pred),torch.mean(real_score_penalty)]
+        losses = [critic_loss.item(),torch.mean(c_lambda *gradient_penalty).item(),torch.mean(disc_fake_pred).item(),-torch.mean(disc_real_pred).item(),torch.mean(real_score_penalty).item()]
         losses_names = ['Total discriminator loss','Gradient penalty','Fake prediction loss','Real prediction loss','Real score penalty']
-        return losses,losses_names
+        return critic_loss,losses,losses_names
 
     def _compute_gen_loss(self, disc_fake_pred):
         """

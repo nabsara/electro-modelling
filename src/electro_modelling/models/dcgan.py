@@ -142,10 +142,8 @@ class DCGAN:
                     # compute discriminator loss on fake and real data
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
-                    losses,losses_names = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
-                    disc_loss = losses[0]
-                    mean_disc_losses += np.array([loss.item()/k_disc_steps for loss in losses])
-                    del losses
+                    disc_loss,losses,losses_names = self._compute_disc_loss(real, fake, disc_real_pred, disc_fake_pred)
+                    mean_disc_losses += np.array(losses)
                     # update discriminator gradients
                     disc_loss.backward(retain_graph=True)
                     # update discriminator optimizer
