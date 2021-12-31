@@ -76,6 +76,7 @@ class GAN:
         -------
             the noise tensor of shape (n_samples, z_dim)
         """
+        # GANSynth : samples a random vector z from a spherical Gaussian
         noise = torch.randn(n_samples, self.z_dim, device=settings.device)
         norm = torch.norm(noise, dim=1, keepdim=True)
         return noise / norm
@@ -242,19 +243,46 @@ class GAN:
                             epoch * len(train_dataloader) + cur_step,
                         )
                     if self.dataset == "techno":
-                        imgs = fake
-                        sounds_tensor = self.get_sounds(imgs)
-                        figure = image_grid_spectrograms(imgs)
+                        # Add generated samples to tensorboard
+                        imgs_fake = fake
+                        # denormalize mel spectrograms
+                        v_max = 2.2926
+                        v_min = -6.0
+                        imgs_fake = imgs_fake * (0.5 * abs(v_max - v_min)) + 0.5 * (v_max + v_min)
+                        fake_sounds_tensor = self.get_sounds(imgs_fake)
+                        fake_figure = image_grid_spectrograms(imgs_fake)
 
                         writer.add_figure(
                             "generated_images",
-                            figure,
+                            fake_figure,
                             epoch * len(train_dataloader) + cur_step,
                         )
-                        for j in range(sounds_tensor.shape[0]):
+                        for j in range(fake_sounds_tensor.shape[0]):
                             writer.add_audio(
                                 "generated_sound/" + str(j),
-                                sounds_tensor[j],
+                                fake_sounds_tensor[j],
+                                global_step=epoch * len(train_dataloader) + cur_step,
+                                sample_rate=16000,
+                            )
+
+                        # Add real samples to tensorboard
+                        imgs_real = real[:min(len(real), 2), :, :, :]
+                        # denormalize mel spectrograms
+                        v_max = 2.2926
+                        v_min = -6.0
+                        imgs_real = imgs_real * (0.5 * abs(v_max - v_min)) + 0.5 * (v_max + v_min)
+                        real_sounds_tensor = self.get_sounds(imgs_real)
+                        real_figure = image_grid_spectrograms(imgs_real)
+
+                        writer.add_figure(
+                            "real_images",
+                            real_figure,
+                            epoch * len(train_dataloader) + cur_step,
+                        )
+                        for j in range(real_sounds_tensor.shape[0]):
+                            writer.add_audio(
+                                "real_sound/" + str(j),
+                                real_sounds_tensor[j],
                                 global_step=epoch * len(train_dataloader) + cur_step,
                                 sample_rate=16000,
                             )
