@@ -26,14 +26,19 @@ class DCGAN:
     ):
         self.z_dim = z_dim
         self.dataset = dataset
-        self.operator = operator
-        self.nmel_ratio = int(operator.nmels / operator.nb_trames)
-        self.generator = Generator(
-            dataset, self.z_dim, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
-        ).to(device=settings.device)
-        self.discriminator = Discriminator(
-            dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
-        ).to(device=settings.device)
+
+        if operator is not None:
+            self.operator = operator
+            self.nmel_ratio = int(operator.nmels / operator.nb_trames)
+            self.generator = Generator(
+                dataset, self.z_dim, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            ).to(device=settings.device)
+            self.discriminator = Discriminator(
+                dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            ).to(device=settings.device)
+        else:
+            self.generator = Generator(dataset, self.z_dim, img_chan=1, hidden_dim=64).to(device=settings.device)
+            self.discriminator = Discriminator(dataset, img_chan=1, hidden_dim=16).to(device=settings.device)
 
         self.model_name = model_name
         if self.model_name == "wgan":
@@ -149,7 +154,7 @@ class DCGAN:
             g_display_loss = 0
             for real in tqdm(train_dataloader):
                 if self.dataset == "MNIST":
-                    _, real = real
+                    real, _ = real
                 cur_batch_size = len(real)
                 real = real.to(settings.device)
 

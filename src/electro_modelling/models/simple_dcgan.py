@@ -53,7 +53,7 @@ class SimpleDCGAN(DCGAN):
         disc_loss = (disc_fake_loss + disc_real_loss) / 2
         losses = [disc_loss.item(), disc_fake_loss.item(), disc_real_loss.item()]
         losses_names = ["Total loss", "Fake prediction loss", "Real prediction loss"]
-        return losses, losses_names
+        return disc_loss, losses, losses_names
 
     def _compute_gen_loss(self, disc_fake_pred):
         """

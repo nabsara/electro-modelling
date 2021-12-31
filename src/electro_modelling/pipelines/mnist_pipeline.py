@@ -20,7 +20,7 @@ class MNISTPipeline:
         self.train_loader, self.test_loader = mnist_data_loader(
             self.batch_size, data_dir=self.data_dir
         )
-        self.model = models[model_name](z_dim=self.z_dim)
+        self.model = models[model_name](z_dim=self.z_dim, dataset="MNIST", img_chan=1)
 
     def train(
         self, learning_rate, k_disc_steps, n_epochs, display_step, show_fig=False
