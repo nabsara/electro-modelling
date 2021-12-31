@@ -266,7 +266,7 @@ class GAN:
                             )
 
                         # Add real samples to tensorboard
-                        imgs_real = real[:min(len(real), 2), :, :, :]
+                        imgs_real = real[:min(len(real), 2), :, :, :].detach().cpu()
                         # denormalize mel spectrograms
                         v_max = 2.2926
                         v_min = -6.0
