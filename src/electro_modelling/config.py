@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     MODELS_DIR: Optional[str] = Field(env="MODELS_DIR")
     DATA_DIR: Optional[str] = Field(env="DATA_DIR")
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 settings = Settings(

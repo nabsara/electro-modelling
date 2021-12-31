@@ -113,10 +113,7 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 
     # Instantiate pipeline
     pipeline = TechnoDatasetPipeline(
-        nfft=nfft,
-        sr=sr,
-        dataset_location=dataset_location,
-        save_location=save_location
+        nfft=nfft, sr=sr, dataset_location=dataset_location, save_location=save_location
     )
     pipeline.process_dataset(nb_samples=nb_samples)
 
@@ -172,13 +169,28 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
     default=500,
     help="Number of iterations between each training stats display",
 )
-@click.option('--show', is_flag=True)
-def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+@click.option("--show", is_flag=True)
+def train_techno_gan(
+    model,
+    dataset_file,
+    data_dir,
+    models_dir,
+    nmels,
+    batch_size,
+    z_dims,
+    n_epochs,
+    learning_rate,
+    k_disc_steps,
+    display_step,
+    show,
+):
     """
-    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+    CLI to train a specified model on MNIST dataset given the input
+    hyperparameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN),
+        'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
@@ -190,12 +202,12 @@ def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size
         batch_size=batch_size,
         z_dims=z_dims,
         nmels=nmels,
-        phase_method='griff'
+        phase_method="griff",
     )
     pipeline.train(
         learning_rate=learning_rate,
         k_disc_steps=k_disc_steps,
         n_epochs=n_epochs,
         display_step=display_step,
-        show_fig=show
+        show_fig=show,
     )
