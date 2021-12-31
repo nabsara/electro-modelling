@@ -17,15 +17,10 @@ class GANSynthGenerator(GNet):
 
     def _build_network(self) -> nn.Sequential:
         return nn.Sequential(
-            # nn.ConvTranspose2d(
-            #     self.z_dim, self.hidden_dim * 8, (2 * self.nmel_ratio, 2), stride=1
-            # ),
             # block 1: (1, 1, 256) --> (2, 16, 256)
             self._make_gen_block(
                 input_channels=self.z_dim,
                 output_channels=self.hidden_dim * 8,
-                kernel_size=3,
-                stride=1,
                 first=True
             ),
 
@@ -33,58 +28,51 @@ class GANSynthGenerator(GNet):
             self._make_gen_block(
                 input_channels=self.hidden_dim * 8,
                 output_channels=self.hidden_dim * 8,
-                kernel_size=3,
-                stride=1,
             ),
 
             # block 3 : (8, 64, 256) --> (16, 128, 256)
             self._make_gen_block(
                 input_channels=self.hidden_dim * 8,
                 output_channels=self.hidden_dim * 8,
-                kernel_size=3,
-                stride=1,
             ),
 
             # block 4 : (16, 128, 256) --> (32, 256, 256)
             self._make_gen_block(
                 input_channels=self.hidden_dim * 8,
                 output_channels=self.hidden_dim * 8,
-                kernel_size=3,
-                stride=1,
             ),
 
             # block 5 : (32, 256, 256) --> (64, 512, 128)
             self._make_gen_block(
                 input_channels=self.hidden_dim * 8,
                 output_channels=self.hidden_dim * 4,
-                kernel_size=3,
-                stride=1,
             ),
 
             # block 6 : (64, 512, 128) --> (128, 1024, 64)
             self._make_gen_block(
                 input_channels=self.hidden_dim * 4,
                 output_channels=self.hidden_dim * 2,
-                kernel_size=3,
-                stride=1,
             ),
 
             # Final layer: (128, 1024, 64) --> (128, 1024, 32)
             self._make_gen_block(
                 input_channels=self.hidden_dim * 2,
                 output_channels=self.hidden_dim,
-                kernel_size=3,
-                stride=1,
+                final=True
             ),
             # (128, 1024, 32) --> (128, 1024, 2)
             nn.Conv2d(self.hidden_dim, self.img_chan, kernel_size=(1, 1), stride=(1, 1)),
             nn.Tanh(),
         )
 
-    def _make_gen_block(self, input_channels, output_channels, kernel_size, stride=(1, 1), first=False, final=False):
+    def _make_gen_block(self, input_channels, output_channels, kernel_size=(3, 3), stride=(1, 1), first=False, final=False):
         if first:
             return nn.Sequential(
-                nn.Conv2d(input_channels, output_channels, (2 * self.nmel_ratio, 2), stride=stride, padding="same"),
+                # nn.ConvTranspose2d(input_channels, output_channels, (2 * self.nmel_ratio, 2), stride=stride),
+                # TODO : change first kernel size depending on the expected output shape
+                # ex: (16, 2) --> (1024, 128)
+                # ex : (2, 2) --> (128, 128)
+                nn.ConvTranspose2d(input_channels, output_channels, (2, 2), stride=stride),
                 PixelNorm(),
                 nn.LeakyReLU(negative_slope=0.2, inplace=True),
                 nn.Conv2d(output_channels, output_channels, kernel_size, stride=stride, padding="same"),
