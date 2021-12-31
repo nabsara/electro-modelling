@@ -145,11 +145,12 @@ class DCGAN:
         g_losses = torch.zeros(n_epochs)
         img_list = []
         it = 0
+        it_display=0
         for epoch in range(n_epochs):
             cur_step = 0
             g_loss = 0
             d_loss = 0
-            d_losses = np.zeros(self.nb_loss_disc)
+            d_loss_arr = np.zeros(self.nb_loss_disc)
             d_display_losses = np.zeros(self.nb_loss_disc)
             g_display_loss = 0
             for real in tqdm(train_dataloader):
@@ -179,7 +180,7 @@ class DCGAN:
                     # update discriminator optimizer
                     self.disc_opt.step()
                 # keep track of the discriminator loss
-                d_losses += mean_disc_losses
+                d_loss_arr += mean_disc_losses
                 d_display_losses += mean_disc_losses
                 d_loss = d_losses[0]
                 # train generator:
@@ -199,6 +200,7 @@ class DCGAN:
                 g_display_loss += gen_loss.item()
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
+                it_display+=1
                 if it % display_step == 0 or (
                     (epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)
                 ):
@@ -215,19 +217,19 @@ class DCGAN:
                     print(
                         f"\nEpoch: [{epoch}/{n_epochs}] \tStep: [{cur_step}/{len(train_dataloader)}]"
                         f"\tTime: {time.time() - start} (s)\tG_loss: {g_display_loss / display_step}"
-                        f"\tTotal_D_loss: {d_display_losses[0] / display_step}"
+                        f"\tTotal_D_loss: {d_display_losses[0] / it_display}"
                     )
 
                     # Add training losses and fake images evolution to tensorboard
                     writer.add_scalar(
                         "training generator loss",
-                        g_display_loss / display_step,
+                        g_display_loss / it_display,
                         epoch * len(train_dataloader) + cur_step,
                     )
                     for loss, name in zip(d_display_losses, losses_names):
                         writer.add_scalar(
                             "Discriminator Losses/" + name,
-                            loss / display_step,
+                            loss / it_display,
                             epoch * len(train_dataloader) + cur_step,
                         )
                     if self.dataset == "MNIST":
@@ -257,6 +259,7 @@ class DCGAN:
                     img_list.append(make_grid(fake, padding=2, normalize=True))
                     d_display_losses = np.zeros(self.nb_loss_disc)
                     g_display_loss = 0
+                    it_display=0
                 cur_step += 1
                 it += 1
             # keep track on batch mean losses evolution through epochs

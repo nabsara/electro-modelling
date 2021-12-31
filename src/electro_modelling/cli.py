@@ -136,12 +136,12 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 )
 @click.option(
     "--nmels",
-    default=512,
+    default=128,
     help="Number of mel frequencies",
 )
 @click.option(
     "--batch_size",
-    default=32,
+    default=16,
     help="Data loader batch size",
 )
 @click.option(
@@ -156,17 +156,17 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 )
 @click.option(
     "--learning_rate",
-    default=0.0002,
+    default=0.0001,
     help="Learning rate",
 )
 @click.option(
     "--k_disc_steps",
-    default=1,
+    default=5,
     help="Number of training step to update only discriminator",
 )
 @click.option(
     "--display_step",
-    default=500,
+    default=250,
     help="Number of iterations between each training stats display",
 )
 @click.option("--show", is_flag=True)
