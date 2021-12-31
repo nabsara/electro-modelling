@@ -41,7 +41,7 @@ pipeline.train(
 
 
 
-# from electro_modelling.models.dcgan import DCGAN
+# from electro_modelling.models.dcgan import GAN
 # from electro_modelling.helpers.helpers_audio import *
 # from electro_modelling.datasets.signal_processing import SignalOperators
 # from electro_modelling.datasets.techno_dataloader import techno_data_loader
@@ -50,7 +50,7 @@ pipeline.train(
 # file_writer = SummaryWriter(logdir)        
 
 
-# model = DCGAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
+# model = GAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
 # sr = 16000
 # Nfft =1024
 # Nmels = int(Nfft/2)

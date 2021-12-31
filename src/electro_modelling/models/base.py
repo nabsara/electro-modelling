@@ -22,6 +22,7 @@ class GAN:
         self.z_dim = z_dim
         self.dataset = dataset
 
+        self.suffix_model_name = ""
         if operator is not None:
             self.operator = operator
             self.nmel_ratio = int(operator.nmels / operator.nb_trames)
@@ -31,8 +32,9 @@ class GAN:
             # self.discriminator = Discriminator(
             #     dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
             # ).to(device=settings.device)
-            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio).to(device=settings.device)
-            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio).to(device=settings.device)
+            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(16, 16)).to(device=settings.device)
+            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(16, 16)).to(device=settings.device)
+            self.suffix_model_name = "img_size_128_128__init_kernel_16_16"
         else:
             self.generator = DCGANGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64).to(device=settings.device)
             self.discriminator = DCGANDiscriminator(img_chan=img_chan, hidden_dim=16).to(device=settings.device)
@@ -136,7 +138,7 @@ class GAN:
         writer = SummaryWriter(
             os.path.join(
                 models_dir,
-                f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"
+                f"runs/exp__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"
                 + time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime()),
             )
         )
@@ -304,9 +306,9 @@ class GAN:
                     gen_losses=g_losses,
                     disc_losses=d_losses,
                     models_dir=models_dir,
-                    generator_filename=f"generator__{self.model_name}__z_{self.z_dim}__lr_{lr}"
+                    generator_filename=f"generator__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}__lr_{lr}"
                     f"__k_{k_disc_steps}__e_{n_epochs}.pt",
-                    discriminator_filename=f"discriminator__{self.model_name}__z_{self.z_dim}"
+                    discriminator_filename=f"discriminator__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}"
                     f"__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
                 )
 

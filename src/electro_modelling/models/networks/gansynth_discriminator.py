@@ -21,12 +21,56 @@ class GANSynthDiscriminator(DNet):
                 the GAN discriminator model
         """
 
-    def __init__(self, img_chan, hidden_dim=32, nmel_ratio=0):
+    def __init__(self, img_chan, hidden_dim=32, nmel_ratio=0, init_kernel=(16, 16)):
         super().__init__(img_chan=img_chan, hidden_dim=hidden_dim)
         self.nmel_ratio = nmel_ratio
+        self.init_kernel = init_kernel
         self.model = self._build_network()
 
     def _build_network(self) -> nn.Sequential:
+        if self.init_kernel == (2, 2) or self.init_kernel == (16, 2):
+            final_block = nn.Sequential(
+                # block 4: (16, 128, 128) --> (8, 64, 256)
+                self._make_disc_block(
+                    input_channels=self.hidden_dim * 4,
+                    output_channels=self.hidden_dim * 8,
+                ),
+
+                # block 5: (8, 64, 256) --> (4, 32, 256)
+                self._make_disc_block(
+                    input_channels=self.hidden_dim * 8,
+                    output_channels=self.hidden_dim * 8,
+                ),
+
+                # block 6: (4, 32, 256) --> (2, 16, 256)
+                self._make_disc_block(
+                    input_channels=self.hidden_dim * 8,
+                    output_channels=self.hidden_dim * 8,
+                ),
+
+                # Final layer:
+                self._make_disc_block(
+                    input_channels=self.hidden_dim * 8,
+                    output_channels=self.hidden_dim * 8,
+                    final=True
+                ),
+                # nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2 * self.nmel_ratio, 2), stride=(1, 1)),
+                nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2, 2), stride=(1, 1)),
+            )
+        elif self.init_kernel == (16, 16):
+            final_block = nn.Sequential(
+                # Final layer:
+                self._make_disc_block(
+                    input_channels=self.hidden_dim * 4,
+                    output_channels=self.hidden_dim * 4,
+                    final=True
+                ),
+                # nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2 * self.nmel_ratio, 2), stride=(1, 1)),
+                nn.Conv2d(self.hidden_dim * 4, 1, kernel_size=(16, 16), stride=(1, 1)),
+            )
+        else:
+            raise NotImplementedError
+
         return nn.Sequential(
             nn.Conv2d(self.img_chan, self.hidden_dim, kernel_size=(1, 1), stride=(1, 1)),
 
@@ -48,32 +92,7 @@ class GANSynthDiscriminator(DNet):
                 output_channels=self.hidden_dim * 4,
             ),
 
-            # block 4: (16, 128, 128) --> (8, 64, 256)
-            self._make_disc_block(
-                input_channels=self.hidden_dim * 4,
-                output_channels=self.hidden_dim * 8,
-            ),
-
-            # block 5: (8, 64, 256) --> (4, 32, 256)
-            self._make_disc_block(
-                input_channels=self.hidden_dim * 8,
-                output_channels=self.hidden_dim * 8,
-            ),
-
-            # block 6: (4, 32, 256) --> (2, 16, 256)
-            self._make_disc_block(
-                input_channels=self.hidden_dim * 8,
-                output_channels=self.hidden_dim * 8,
-            ),
-
-            # Final layer:
-            self._make_disc_block(
-                input_channels=self.hidden_dim * 8,
-                output_channels=self.hidden_dim * 8,
-                final=True
-            ),
-            # nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2 * self.nmel_ratio, 2), stride=(1, 1)),
-            nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2, 2), stride=(1, 1)),
+            final_block
         )
 
     def _make_disc_block(
