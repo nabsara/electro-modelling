@@ -1,6 +1,6 @@
 import torch
 
-from electro_modelling.models.dcgan import DCGAN
+from electro_modelling.models.base import GAN
 
 
 class MyHingeLoss(torch.nn.Module):
@@ -19,7 +19,7 @@ class MyLinearLoss(torch.nn.Module):
         return torch.mean(torch.mul(target, output), 0)
 
 
-class HingeGAN(DCGAN):
+class HingeGAN(GAN):
     def __init__(self, z_dim):
         super().__init__(z_dim=z_dim, model_name="hinge_dcgan", init_weights=True)
 

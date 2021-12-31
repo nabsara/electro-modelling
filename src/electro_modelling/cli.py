@@ -65,7 +65,7 @@ def train_mnist_gan(
     hyper-parameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN),
+        model to run : 'dcgan' (SimpleGAN), 'hgan' (HingeGAN),
         'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters
@@ -189,7 +189,7 @@ def train_techno_gan(
     hyperparameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN),
+        model to run : 'dcgan' (SimpleGAN), 'hgan' (HingeGAN),
         'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters

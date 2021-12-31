@@ -1,12 +1,12 @@
 import torch
 
 from electro_modelling.config import settings
-from electro_modelling.models.dcgan import DCGAN
+from electro_modelling.models.base import GAN
 
 
-class WGANGP(DCGAN):
+class WGANGP(GAN):
     """
-    Note: To inherit from DCGAN and benefit from common class methods,
+    Note: To inherit from GAN and benefit from common class methods,
     we keep the discriminator class attributes though it corresponds
     to the critic model here !
     i.e. self.discriminator, self.disc_opt,

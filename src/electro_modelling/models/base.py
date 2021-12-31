@@ -12,17 +12,12 @@ from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
 from electro_modelling.helpers.helpers_audio import image_grid_spectrograms
+from electro_modelling.models.networks import DCGANGenerator, DCGANDiscriminator, GANSynthGenerator, GANSynthDiscriminator
 
 
-class DCGAN:
+class GAN:
     def __init__(
-        self,
-        z_dim,
-        model_name,
-        init_weights=True,
-        dataset="MNIST",
-        img_chan=1,
-        operator=None,
+        self, z_dim, model_name, init_weights, dataset, img_chan, nb_fixed_noise=4, operator=None
     ):
         self.z_dim = z_dim
         self.dataset = dataset
@@ -30,15 +25,23 @@ class DCGAN:
         if operator is not None:
             self.operator = operator
             self.nmel_ratio = int(operator.nmels / operator.nb_trames)
-            self.generator = Generator(
-                dataset, self.z_dim, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
-            ).to(device=settings.device)
-            self.discriminator = Discriminator(
-                dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
-            ).to(device=settings.device)
+            # self.generator = Generator(
+            #     dataset, self.z_dim, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            # ).to(device=settings.device)
+            # self.discriminator = Discriminator(
+            #     dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            # ).to(device=settings.device)
+            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio).to(device=settings.device)
+            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio).to(device=settings.device)
         else:
-            self.generator = Generator(dataset, self.z_dim, img_chan=1, hidden_dim=64).to(device=settings.device)
-            self.discriminator = Discriminator(dataset, img_chan=1, hidden_dim=16).to(device=settings.device)
+            self.generator = DCGANGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64).to(device=settings.device)
+            self.discriminator = DCGANDiscriminator(img_chan=img_chan, hidden_dim=16).to(device=settings.device)
+            # self.generator = Generator(
+            #     dataset, self.z_dim, img_chan=1, hidden_dim=64
+            # ).to(device=settings.device)
+            # self.discriminator = Discriminator(dataset, img_chan=1, hidden_dim=16).to(
+            #     device=settings.device
+            # )
 
         self.model_name = model_name
         if self.model_name == "wgan":
@@ -53,7 +56,7 @@ class DCGAN:
             self.discriminator.apply(self.initialize_weights)
 
         # TODO: add fixed noise for model evaluation and to add to tensorboard
-        self.fixed_noise = self.get_noise(4)
+        self.fixed_noise = self.get_noise(nb_fixed_noise)
 
     def get_noise(self, n_samples):
         """
@@ -145,7 +148,7 @@ class DCGAN:
         g_losses = torch.zeros(n_epochs)
         img_list = []
         it = 0
-        it_display=0
+        it_display = 0
         for epoch in range(n_epochs):
             cur_step = 0
             g_loss = 0
@@ -200,7 +203,7 @@ class DCGAN:
                 g_display_loss += gen_loss.item()
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
-                it_display+=1
+                it_display += 1
                 if it % display_step == 0 or (
                     (epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)
                 ):
@@ -259,7 +262,7 @@ class DCGAN:
                     img_list.append(make_grid(fake, padding=2, normalize=True))
                     d_display_losses = np.zeros(self.nb_loss_disc)
                     g_display_loss = 0
-                    it_display=0
+                    it_display = 0
                 cur_step += 1
                 it += 1
             # keep track on batch mean losses evolution through epochs
@@ -268,46 +271,46 @@ class DCGAN:
 
             # model checkpoints:
             if epoch % 10 == 0 or epoch == n_epochs - 1:
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": self.generator.state_dict(),
-                        "optimizer_state_dict": self.gen_opt.state_dict(),
-                        "loss": g_losses[epoch],
-                    },
-                    os.path.join(
-                        models_dir,
-                        f"generator__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
-                    ),
-                )
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": self.discriminator.state_dict(),
-                        "optimizer_state_dict": self.disc_opt.state_dict(),
-                        "loss": d_losses[epoch],
-                    },
-                    os.path.join(
-                        models_dir,
-                        f"discriminator__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
-                    ),
+                self.save_models(
+                    epoch=epoch,
+                    gen_losses=g_losses,
+                    disc_losses=d_losses,
+                    models_dir=models_dir,
+                    generator_filename=f"generator__{self.model_name}__z_{self.z_dim}__lr_{lr}"
+                    f"__k_{k_disc_steps}__e_{n_epochs}.pt",
+                    discriminator_filename=f"discriminator__{self.model_name}__z_{self.z_dim}"
+                    f"__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
                 )
 
         return d_losses, g_losses, img_list
 
-    def evaluate(self):
-        pass
-
     def save_models(
         self,
-        generator_filename="generator_dcgan.pt",
-        discriminator_filename="discriminator_dcgan.pt",
+        epoch,
+        gen_losses,
+        disc_losses,
+        models_dir,
+        generator_filename,
+        discriminator_filename,
     ):
         torch.save(
-            self.generator.state_dict(),
-            os.path.join(settings.MODELS_DIR, generator_filename),
+            {
+                "epoch": epoch,
+                "model_state_dict": self.generator.state_dict(),
+                "optimizer_state_dict": self.gen_opt.state_dict(),
+                "loss": gen_losses[epoch],
+            },
+            os.path.join(models_dir, generator_filename),
         )
         torch.save(
-            self.discriminator.state_dict(),
-            os.path.join(settings.MODELS_DIR, discriminator_filename),
+            {
+                "epoch": epoch,
+                "model_state_dict": self.discriminator.state_dict(),
+                "optimizer_state_dict": self.disc_opt.state_dict(),
+                "loss": disc_losses[epoch],
+            },
+            os.path.join(models_dir, discriminator_filename),
         )
+
+    def evaluate(self):
+        pass

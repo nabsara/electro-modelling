@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-from electro_modelling.models.dcgan import DCGAN
+from electro_modelling.models.base import GAN
 
 
-class SimpleDCGAN(DCGAN):
+class SimpleGAN(GAN):
     def __init__(self, z_dim, dataset="MNIST", img_chan=1):
         super().__init__(
             z_dim=z_dim,

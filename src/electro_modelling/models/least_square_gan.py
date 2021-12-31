@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-from electro_modelling.models.dcgan import DCGAN
+from electro_modelling.models.base import GAN
 
 
-class LeastSquareGAN(DCGAN):
+class LeastSquareGAN(GAN):
     def __init__(self, z_dim):
         super().__init__(
             z_dim=z_dim, model_name="least_square_dcgan", init_weights=True
