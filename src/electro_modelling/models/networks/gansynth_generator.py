@@ -6,7 +6,7 @@ from electro_modelling.models.networks.base import GNet
 
 class GANSynthGenerator(GNet):
 
-    def __init__(self, z_dim, img_chan, hidden_dim, nmel_ratio=0, init_kernel=(16, 16)):
+    def __init__(self, z_dim, img_chan, hidden_dim, nmel_ratio=0, init_kernel=(2, 2)):
         super().__init__(
             z_dim=z_dim,
             img_chan=img_chan,

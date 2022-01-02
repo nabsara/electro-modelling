@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 from electro_modelling.models.networks.base import DNet
@@ -21,7 +22,7 @@ class GANSynthDiscriminator(DNet):
                 the GAN discriminator model
         """
 
-    def __init__(self, img_chan, hidden_dim=32, nmel_ratio=0, init_kernel=(16, 16)):
+    def __init__(self, img_chan, hidden_dim=32, nmel_ratio=0, init_kernel=(2, 2)):
         super().__init__(img_chan=img_chan, hidden_dim=hidden_dim)
         self.nmel_ratio = nmel_ratio
         self.init_kernel = init_kernel
@@ -123,9 +124,9 @@ class GANSynthDiscriminator(DNet):
         if final:
             return nn.Sequential(
                 # minibatch std : (2, 16, 256) --> (2, 16, 257)
-                # TODO: ADD minibatch std layer
+                MinibatchStd(),
                 # (2, 16, 257) --> (2, 16, 256)
-                nn.Conv2d(input_channels, output_channels, kernel_size, stride=stride, padding="same"),
+                nn.Conv2d(input_channels + 1, output_channels, kernel_size, stride=stride, padding="same"),
                 nn.LeakyReLU(negative_slope=0.2, inplace=True),
                 # (2, 16, 256) --> (2, 16, 256)
                 nn.Conv2d(output_channels, output_channels, kernel_size, stride=stride, padding="same"),
@@ -139,3 +140,14 @@ class GANSynthDiscriminator(DNet):
                 nn.LeakyReLU(negative_slope=0.2, inplace=True),
                 nn.AvgPool2d(kernel_size=2, stride=2),
             )
+
+
+class MinibatchStd(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        batch_statistics = (
+            torch.std(x, dim=0).mean().repeat(x.shape[0], 1, x.shape[2], x.shape[3])
+        )
+        return torch.cat([x, batch_statistics], dim=1)

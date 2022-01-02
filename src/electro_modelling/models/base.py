@@ -32,9 +32,9 @@ class GAN:
             # self.discriminator = Discriminator(
             #     dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
             # ).to(device=settings.device)
-            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(16, 16)).to(device=settings.device)
-            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(16, 16)).to(device=settings.device)
-            self.suffix_model_name = "img_size_128_128__init_kernel_16_16"
+            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(2, 2)).to(device=settings.device)
+            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio, init_kernel=(2, 2)).to(device=settings.device)
+            self.suffix_model_name = "img_size_128_128__init_kernel_2_2_minibatch_std"
         else:
             self.generator = DCGANGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64).to(device=settings.device)
             self.discriminator = DCGANDiscriminator(img_chan=img_chan, hidden_dim=16).to(device=settings.device)
