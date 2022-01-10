@@ -11,6 +11,9 @@ class SignalOperators:
         ntimes=128,
         signal_length=32000,
         phase_rec_method="Griffin-Lim",
+        v_max = 2.2926,
+        v_min = -6.0
+        
     ):
 
         # Parameters for the STFT analysis and synthesis
@@ -22,7 +25,8 @@ class SignalOperators:
         self.sr = sr
         self.signal_length = signal_length
         self.nb_trames = int((self.signal_length - self.win_length) / self.hop)
-
+        self.v_min = v_min
+        self.v_max = v_max
         # Parameters for the MEL spectrograms
         self.nmels = nmels
         self.freqs = np.linspace(0, self.sr / 2, self.nfft2)
@@ -54,18 +58,27 @@ class SignalOperators:
             self.griffin_phase_init = None
             self.griffin_nb_iterations = 50
             self.griffin_required_loss = False
-
-    def forward(self, signal):
+    def normalize_spectrogram(self,STFT_amp):
+        return ((STFT_amp - 0.5 * (self.v_max + self.v_min)) / (0.5 * abs(self.v_max - self.v_min))) 
+    
+    def unnormalize_spectrogram(self,STFT_amp_norm):
+        return (STFT_amp_norm * (0.5 * abs(self.v_max - self.v_min)) + 0.5 * (self.v_max + self.v_min))
+    
+    def forward(self, signal,normalize=False):
         STFT = self.get_stft(signal)
         STFT_mel = self.stft_to_mel(STFT)
+        if normalize:
+            STFT_mel[0] = self.normalize_spectrogram(STFT_mel[0])
         return STFT_mel
 
-    def backward(self, STFT_mel):
+    def backward(self, STFT_mel,unnormalize=False):
         if (
             self.phase_rec_method == "Griffin-Lim"
         ):  # Use the Griffin-Lim algorithm to reconstruct the phase
             # from a STFT amplitude
-            STFT_mel_amp_log = STFT_mel
+            if unnormalize:
+                STFT_mel[0] = self.unnormalize_spectrogram(STFT_mel[0])
+            STFT_mel_amp_log = STFT_mel[0]
             STFT_mel_amp = 10 ** (STFT_mel_amp_log)
             STFT_amp = self.mel_to_stft_griffin(STFT_mel_amp)
             STFT_phase = self.griffin_phase(STFT_amp)

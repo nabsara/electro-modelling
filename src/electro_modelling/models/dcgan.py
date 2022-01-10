@@ -12,33 +12,33 @@ from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
 from electro_modelling.helpers.helpers_audio import image_grid_spectrograms
-from electro_modelling.models.networks import DCGANGenerator, DCGANDiscriminator, GANSynthGenerator, GANSynthDiscriminator
 
 
-class GAN:
+class DCGAN:
     def __init__(
-        self, z_dim, model_name, init_weights, dataset, img_chan, nb_fixed_noise=4, operator=None
+        self,
+        z_dim,
+        model_name,
+        init_weights=True,
+        dataset="MNIST",
+        img_chan=1,
+        operator=None,
     ):
         self.z_dim = z_dim
         self.dataset = dataset
 
-        self.suffix_model_name = ""
         if operator is not None:
             self.operator = operator
             self.nmel_ratio = int(operator.nmels / operator.nb_trames)
-            self.init_kernel=(int(2*self.nmel_ratio), 2)
-            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, init_kernel=self.init_kernel).to(device=settings.device)
-            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32,  init_kernel=self.init_kernel).to(device=settings.device)
-            self.suffix_model_name = "img_size_"+str(self.operator.nmels)+"_128__init_kernel_" + str(self.init_kernel)+"_minibatch_std"
+            self.generator = Generator(
+                dataset, self.z_dim, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            ).to(device=settings.device)
+            self.discriminator = Discriminator(
+                dataset, img_chan, hidden_dim=32, nmel_ratio=self.nmel_ratio
+            ).to(device=settings.device)
         else:
-            self.generator = DCGANGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64).to(device=settings.device)
-            self.discriminator = DCGANDiscriminator(img_chan=img_chan, hidden_dim=16).to(device=settings.device)
-            # self.generator = Generator(
-            #     dataset, self.z_dim, img_chan=1, hidden_dim=64
-            # ).to(device=settings.device)
-            # self.discriminator = Discriminator(dataset, img_chan=1, hidden_dim=16).to(
-            #     device=settings.device
-            # )
+            self.generator = Generator(dataset, self.z_dim, img_chan=1, hidden_dim=64).to(device=settings.device)
+            self.discriminator = Discriminator(dataset, img_chan=1, hidden_dim=16).to(device=settings.device)
 
         self.model_name = model_name
         if self.model_name == "wgan":
@@ -53,7 +53,7 @@ class GAN:
             self.discriminator.apply(self.initialize_weights)
 
         # TODO: add fixed noise for model evaluation and to add to tensorboard
-        self.fixed_noise = self.get_noise(nb_fixed_noise)
+        self.fixed_noise = self.get_noise(4)
 
     def get_noise(self, n_samples):
         """
@@ -73,16 +73,15 @@ class GAN:
         -------
             the noise tensor of shape (n_samples, z_dim)
         """
-        # GANSynth : samples a random vector z from a spherical Gaussian
         noise = torch.randn(n_samples, self.z_dim, device=settings.device)
         norm = torch.norm(noise, dim=1, keepdim=True)
         return noise / norm
 
     def get_sounds(self, fakes):
         sounds_list = []
-        for fake in fakes:
-            STFT_mel = fake.numpy()
-            sound = self.operator.backward(STFT_mel,unnormalize=True)
+        for i, fake in enumerate(fakes):
+            STFT_mel_amp = fake[0].numpy()
+            sound = self.operator.backward(STFT_mel_amp)
             sounds_list.append(torch.tensor(sound))
         sounds_tensor = torch.stack(sounds_list)
         return sounds_tensor
@@ -133,7 +132,7 @@ class GAN:
         writer = SummaryWriter(
             os.path.join(
                 models_dir,
-                f"runs/exp__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"
+                f"runs/exp__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}_"
                 + time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime()),
             )
         )
@@ -146,7 +145,7 @@ class GAN:
         g_losses = torch.zeros(n_epochs)
         img_list = []
         it = 0
-        it_display = 0
+        it_display=0
         for epoch in range(n_epochs):
             cur_step = 0
             g_loss = 0
@@ -168,7 +167,7 @@ class GAN:
                     # generate fake data from latent vectors
                     fake_noise = self.get_noise(cur_batch_size)
                     fake = self.generator(fake_noise)
-                    print(real)
+
                     # compute discriminator loss on fake and real data
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
@@ -201,7 +200,7 @@ class GAN:
                 g_display_loss += gen_loss.item()
                 # display training stats
                 # Check how the generator is doing by saving G's output on fixed_noise
-                it_display += 1
+                it_display+=1
                 if it % display_step == 0 or (
                     (epoch == n_epochs - 1) and (cur_step == len(train_dataloader) - 1)
                 ):
@@ -240,43 +239,19 @@ class GAN:
                             epoch * len(train_dataloader) + cur_step,
                         )
                     if self.dataset == "techno":
-                        # Add generated samples to tensorboard
-                        imgs_fake = fake
-                        # denormalize mel spectrograms
-                        fake_sounds_tensor = self.get_sounds(imgs_fake)
-                        fake_figure = image_grid_spectrograms(imgs_fake)
+                        imgs = fake
+                        sounds_tensor = self.get_sounds(imgs)
+                        figure = image_grid_spectrograms(imgs)
 
                         writer.add_figure(
                             "generated_images",
-                            fake_figure,
+                            figure,
                             epoch * len(train_dataloader) + cur_step,
                         )
-                        for j in range(fake_sounds_tensor.shape[0]):
+                        for j in range(sounds_tensor.shape[0]):
                             writer.add_audio(
                                 "generated_sound/" + str(j),
-                                fake_sounds_tensor[j],
-                                global_step=epoch * len(train_dataloader) + cur_step,
-                                sample_rate=16000,
-                            )
-
-                        # Add real samples to tensorboard
-                        imgs_real = real[:min(len(real), 4), :, :, :].detach().cpu()
-                        # denormalize mel spectrograms
-                        # v_max = 2.2926
-                        # v_min = -6.0
-                        # imgs_real = imgs_real * (0.5 * abs(v_max - v_min)) + 0.5 * (v_max + v_min)
-                        real_sounds_tensor = self.get_sounds(imgs_real)
-                        real_figure = image_grid_spectrograms(imgs_real)
-
-                        writer.add_figure(
-                            "real_images",
-                            real_figure,
-                            epoch * len(train_dataloader) + cur_step,
-                        )
-                        for j in range(real_sounds_tensor.shape[0]):
-                            writer.add_audio(
-                                "real_sound/" + str(j),
-                                real_sounds_tensor[j],
+                                sounds_tensor[j],
                                 global_step=epoch * len(train_dataloader) + cur_step,
                                 sample_rate=16000,
                             )
@@ -284,7 +259,7 @@ class GAN:
                     img_list.append(make_grid(fake, padding=2, normalize=True))
                     d_display_losses = np.zeros(self.nb_loss_disc)
                     g_display_loss = 0
-                    it_display = 0
+                    it_display=0
                 cur_step += 1
                 it += 1
             # keep track on batch mean losses evolution through epochs
@@ -293,46 +268,46 @@ class GAN:
 
             # model checkpoints:
             if epoch % 10 == 0 or epoch == n_epochs - 1:
-                self.save_models(
-                    epoch=epoch,
-                    gen_losses=g_losses,
-                    disc_losses=d_losses,
-                    models_dir=models_dir,
-                    generator_filename=f"generator__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}__lr_{lr}"
-                    f"__k_{k_disc_steps}__e_{n_epochs}.pt",
-                    discriminator_filename=f"discriminator__{self.model_name}_{self.suffix_model_name}__z_{self.z_dim}"
-                    f"__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": self.generator.state_dict(),
+                        "optimizer_state_dict": self.gen_opt.state_dict(),
+                        "loss": g_losses[epoch],
+                    },
+                    os.path.join(
+                        models_dir,
+                        f"generator__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
+                    ),
+                )
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": self.discriminator.state_dict(),
+                        "optimizer_state_dict": self.disc_opt.state_dict(),
+                        "loss": d_losses[epoch],
+                    },
+                    os.path.join(
+                        models_dir,
+                        f"discriminator__{self.model_name}__z_{self.z_dim}__lr_{lr}__k_{k_disc_steps}__e_{n_epochs}.pt",
+                    ),
                 )
 
         return d_losses, g_losses, img_list
 
-    def save_models(
-        self,
-        epoch,
-        gen_losses,
-        disc_losses,
-        models_dir,
-        generator_filename,
-        discriminator_filename,
-    ):
-        torch.save(
-            {
-                "epoch": epoch,
-                "model_state_dict": self.generator.state_dict(),
-                "optimizer_state_dict": self.gen_opt.state_dict(),
-                "loss": gen_losses[epoch],
-            },
-            os.path.join(models_dir, generator_filename),
-        )
-        torch.save(
-            {
-                "epoch": epoch,
-                "model_state_dict": self.discriminator.state_dict(),
-                "optimizer_state_dict": self.disc_opt.state_dict(),
-                "loss": disc_losses[epoch],
-            },
-            os.path.join(models_dir, discriminator_filename),
-        )
-
     def evaluate(self):
         pass
+
+    def save_models(
+        self,
+        generator_filename="generator_dcgan.pt",
+        discriminator_filename="discriminator_dcgan.pt",
+    ):
+        torch.save(
+            self.generator.state_dict(),
+            os.path.join(settings.MODELS_DIR, generator_filename),
+        )
+        torch.save(
+            self.discriminator.state_dict(),
+            os.path.join(settings.MODELS_DIR, discriminator_filename),
+        )

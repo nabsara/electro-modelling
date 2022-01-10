@@ -22,9 +22,8 @@ class GANSynthDiscriminator(DNet):
                 the GAN discriminator model
         """
 
-    def __init__(self, img_chan, hidden_dim=32, nmel_ratio=0, init_kernel=(2, 2)):
+    def __init__(self, img_chan, hidden_dim=32, init_kernel=(2, 2)):
         super().__init__(img_chan=img_chan, hidden_dim=hidden_dim)
-        self.nmel_ratio = nmel_ratio
         self.init_kernel = init_kernel
         self.model = self._build_network()
 
@@ -55,8 +54,7 @@ class GANSynthDiscriminator(DNet):
                     output_channels=self.hidden_dim * 8,
                     final=True
                 ),
-                # nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2 * self.nmel_ratio, 2), stride=(1, 1)),
-                nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2, 2), stride=(1, 1)),
+                nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=self.init_kernel, stride=(1, 1)),
             )
         elif self.init_kernel == (16, 16):
             final_block = nn.Sequential(
@@ -66,7 +64,6 @@ class GANSynthDiscriminator(DNet):
                     output_channels=self.hidden_dim * 4,
                     final=True
                 ),
-                # nn.Conv2d(self.hidden_dim * 8, 1, kernel_size=(2 * self.nmel_ratio, 2), stride=(1, 1)),
                 nn.Conv2d(self.hidden_dim * 4, 1, kernel_size=(16, 16), stride=(1, 1)),
             )
         else:

@@ -45,13 +45,10 @@ class TechnoDatasetWavtoMel(Dataset):
 
     def __getitem__(self, index):
         sample = np.copy(self.samples[index])
-        mel = self.operator.forward(sample)
+        mel = self.operator.forward(sample,normalize=True)
         mel = torch.tensor(mel).float()
         if self.phase_method == "griff":
             mel = mel[:1, :, :]
-            max = 2.2926
-            min = -6.0
-            mel = (mel - 0.5 * (max + min)) / (0.5 * abs(max - min))
         else:
             raise NotImplementedError
         return mel
