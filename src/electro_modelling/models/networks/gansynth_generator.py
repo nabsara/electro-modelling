@@ -16,7 +16,7 @@ class GANSynthGenerator(GNet):
         self.model = self._build_network()
 
     def _build_network(self) -> nn.Sequential:
-        if self.init_kernel == (16, 2) or self.init_kernel == (2, 2):
+        if True:#self.init_kernel == (16, 2) or self.init_kernel == (2, 2):
             init_block = nn.Sequential(
                 # block 1: (1, 1, 256) --> (4, 32, 256)
                 self._make_gen_block(

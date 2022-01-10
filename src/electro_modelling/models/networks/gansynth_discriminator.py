@@ -28,7 +28,7 @@ class GANSynthDiscriminator(DNet):
         self.model = self._build_network()
 
     def _build_network(self) -> nn.Sequential:
-        if self.init_kernel == (2, 2) or self.init_kernel == (16, 2):
+        if True:#self.init_kernel == (2, 2) or self.init_kernel == (16, 2):
             final_block = nn.Sequential(
                 # block 4: (16, 128, 128) --> (8, 64, 256)
                 self._make_disc_block(
