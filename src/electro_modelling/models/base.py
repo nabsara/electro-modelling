@@ -159,16 +159,13 @@ class GAN:
                     real, _ = real
                 cur_batch_size = len(real)
                 real = real.to(settings.device)
-
                 mean_disc_losses = np.zeros(self.nb_loss_disc)
-
                 # train discriminator for k steps:
                 for _ in range(k_disc_steps):
                     self.disc_opt.zero_grad()
                     # generate fake data from latent vectors
                     fake_noise = self.get_noise(cur_batch_size)
                     fake = self.generator(fake_noise)
-                    print(real)
                     # compute discriminator loss on fake and real data
                     disc_fake_pred = self.discriminator(fake.detach())
                     disc_real_pred = self.discriminator(real)
