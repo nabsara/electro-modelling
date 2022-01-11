@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Electro Modelling</title>
+	<link rel="stylesheet" type="text/css" href="./static/css/normalize.css" />
+  	<link rel="stylesheet" type="text/css" href="./static/css/styles.css" />
+
+</head>
+<body>
+	<h1>Project - Adversarial modelling of electronic music loops</h1>
+
+	<h2>Demo : </h2>
+	<div class="row">
+  		<div class="column">
+			<div style="margin: 5px auto;">
+				<video autoplay="autoplay" controls="controls" preload="preload" width="500" height="600">
+					<source src="{{ url_for('display_video') }}" type="video/mp4"></source>
+				</video>
+			</div>
+		</div>
+		<div class="column">
+			<div style="margin: 10px auto;">
+				<video autoplay="autoplay" controls="controls" preload="preload" width="500" height="600">
+					<source src="{{ url_for('display_video') }}" type="video/mp4"></source>
+				</video>
+			</div>
+		</div>
+	</div>
+
+	<h2>Test by yourself !</h2>
+	<div class="row">
+		<form method="post" action="/" enctype="multipart/form-data">
+    	<dl>
+			<p>
+				<label for="nbSample">Number of points to build the trajectory in the latent space :</label>
+				<input id="nbSample" type="number" name="nbSample" min="1" max="100" required>
+			</p>
+    	</dl>
+    	<p>
+			<input type="submit" value="Generate sample">
+		</p>
+		</form>
+	</div>
+</body>
+</html>
