@@ -53,7 +53,7 @@ from electro_modelling.datasets.techno_dataloader import techno_data_loader
 
 sr = 16000
 nfft =1024
-nmels = int(nfft/8)
+nmels = int(nfft/2)
 operator = SignalOperators(nfft,nmels,sr)
 model = GAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1,operator=operator)
 
@@ -62,7 +62,7 @@ noise = model.get_noise(2)
 
 # imgs = model.generator.forward(noise).detach().cpu()
 
-data_loader = techno_data_loader(4,dataset_dir,operator)
+data_loader = techno_data_loader(8,dataset_dir,operator)
 imgs = next(iter(data_loader))
 scores = model.discriminator.forward(imgs).detach().cpu()
 

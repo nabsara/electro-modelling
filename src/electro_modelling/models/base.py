@@ -81,7 +81,7 @@ class GAN:
     def get_sounds(self, fakes):
         sounds_list = []
         for fake in fakes:
-            STFT_mel = fake.numpy()
+            STFT_mel = fake.numpy().copy()
             sound = self.operator.backward(STFT_mel,unnormalize=True)
             sounds_list.append(torch.tensor(sound))
         sounds_tensor = torch.stack(sounds_list)
@@ -155,6 +155,7 @@ class GAN:
             d_display_losses = np.zeros(self.nb_loss_disc)
             g_display_loss = 0
             for real in tqdm(train_dataloader):
+                
                 if self.dataset == "MNIST":
                     real, _ = real
                 cur_batch_size = len(real)
@@ -258,13 +259,15 @@ class GAN:
 
                         # Add real samples to tensorboard
                         imgs_real = real[:min(len(real), 4), :, :, :].detach().cpu()
+                        
                         # denormalize mel spectrograms
                         # v_max = 2.2926
                         # v_min = -6.0
                         # imgs_real = imgs_real * (0.5 * abs(v_max - v_min)) + 0.5 * (v_max + v_min)
                         real_sounds_tensor = self.get_sounds(imgs_real)
                         real_figure = image_grid_spectrograms(imgs_real)
-
+                        print(torch.min(imgs_real))
+                        
                         writer.add_figure(
                             "real_images",
                             real_figure,

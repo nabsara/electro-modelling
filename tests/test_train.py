@@ -26,7 +26,7 @@ n_epochs = 1
 learning_rate = 0.0002 
 k_disc_steps = 5
 display_step = 1
-nmels=128
+nmels=512
 show = True
 
 pipeline = TechnoPipeline( model, dataset_dir,models_dir, batch_size, z_dims,nmels=nmels)

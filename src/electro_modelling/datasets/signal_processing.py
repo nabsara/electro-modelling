@@ -67,7 +67,7 @@ class SignalOperators:
     def forward(self, signal,normalize=False):
         STFT = self.get_stft(signal)
         STFT_mel = self.stft_to_mel(STFT)
-        if normalize:
+        if normalize==True:
             STFT_mel[0] = self.normalize_spectrogram(STFT_mel[0])
         return STFT_mel
 
@@ -76,7 +76,7 @@ class SignalOperators:
             self.phase_rec_method == "Griffin-Lim"
         ):  # Use the Griffin-Lim algorithm to reconstruct the phase
             # from a STFT amplitude
-            if unnormalize:
+            if unnormalize==True:
                 STFT_mel[0] = self.unnormalize_spectrogram(STFT_mel[0])
             STFT_mel_amp_log = STFT_mel[0]
             STFT_mel_amp = 10 ** (STFT_mel_amp_log)
@@ -105,8 +105,9 @@ class SignalOperators:
     def get_phase_from_if(self, IF):
         return np.cumsum(IF * np.pi, axis=1)
 
-    def get_stft(self, signal):
-        STFT = np.zeros((self.nfft2, self.nb_trames), dtype="complex")
+    def get_stft(self, signal,pad=True):
+        current_nb_trames = int((signal.shape[0] - self.win_length) / self.hop)
+        STFT = np.zeros((self.nfft2, current_nb_trames), dtype="complex")
         for j in range(self.nb_trames):
             i0 = j * self.hop
             iend = min(i0 + self.win_length, signal.size)
@@ -114,7 +115,8 @@ class SignalOperators:
             fen = np.hanning(len(signal_w))
             signal_w = signal_w * fen
             STFT[:, j] = np.fft.rfft(signal_w, self.nfft)
-        STFT = np.pad(STFT, ([0, 0], [0, self.ntimes - self.nb_trames]))
+        if pad==True:
+            STFT = np.pad(STFT, ([0, 0], [0, self.ntimes - current_nb_trames]))
         return STFT
 
     def stft_to_mel(self, STFT):
@@ -167,8 +169,7 @@ class SignalOperators:
         for ind_iteration in range(nb_iterations):
             x_recovered = self.rebuild_signal(STFT_hat)
 
-            STFT_temp = self.get_stft(x_recovered)
-
+            STFT_temp = self.get_stft(x_recovered,pad=False)
             STFT_hat = STFT_amp * np.exp(1j * np.angle(STFT_temp))
             if required_loss:
                 loss[ind_iteration] = np.linalg.norm(np.abs(STFT_temp) - STFT_amp)
