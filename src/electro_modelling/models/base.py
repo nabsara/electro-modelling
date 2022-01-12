@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+
+"""
+
 import os
 import time
 import numpy as np
@@ -7,17 +12,44 @@ from tqdm import tqdm
 from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
 
-from electro_modelling.models.discriminator import Discriminator
-from electro_modelling.models.generator import Generator
 from electro_modelling.config import settings
 from electro_modelling.helpers.helpers_visualization import show_tensor_images
 from electro_modelling.helpers.helpers_audio import image_grid_spectrograms
-from electro_modelling.models.networks import DCGANGenerator, DCGANDiscriminator, GANSynthGenerator, GANSynthDiscriminator
+from electro_modelling.models.networks import (
+    DCGANGenerator,
+    DCGANDiscriminator,
+    GANSynthGenerator,
+    GANSynthDiscriminator,
+)
 
 
 class GAN:
+    """
+
+    Parameters
+    ----------
+    z_dim
+    model_name
+    init_weights
+    dataset
+    img_chan
+    nb_fixed_noise
+    operator
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(
-        self, z_dim, model_name, init_weights, dataset, img_chan, nb_fixed_noise=4, operator=None
+        self,
+        z_dim,
+        model_name,
+        init_weights,
+        dataset,
+        img_chan,
+        nb_fixed_noise=4,
+        operator=None,
     ):
         self.z_dim = z_dim
         self.dataset = dataset
@@ -26,13 +58,30 @@ class GAN:
         if operator is not None:
             self.operator = operator
             self.nmel_ratio = int(operator.nmels / operator.nb_trames)
-            self.init_kernel=(int(2*self.nmel_ratio), 2)
-            self.generator = GANSynthGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=32, init_kernel=self.init_kernel).to(device=settings.device)
-            self.discriminator = GANSynthDiscriminator(img_chan=img_chan, hidden_dim=32,  init_kernel=self.init_kernel).to(device=settings.device)
-            self.suffix_model_name = "img_size_"+str(self.operator.nmels)+"_128__init_kernel_" + str(self.init_kernel)+"_minibatch_std"
+            self.init_kernel = (int(2 * self.nmel_ratio), 2)
+            self.generator = GANSynthGenerator(
+                z_dim=self.z_dim,
+                img_chan=img_chan,
+                hidden_dim=32,
+                init_kernel=self.init_kernel,
+            ).to(device=settings.device)
+            self.discriminator = GANSynthDiscriminator(
+                img_chan=img_chan, hidden_dim=32, init_kernel=self.init_kernel
+            ).to(device=settings.device)
+            self.suffix_model_name = (
+                "img_size_"
+                + str(self.operator.nmels)
+                + "_128__init_kernel_"
+                + str(self.init_kernel)
+                + "_minibatch_std"
+            )
         else:
-            self.generator = DCGANGenerator(z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64).to(device=settings.device)
-            self.discriminator = DCGANDiscriminator(img_chan=img_chan, hidden_dim=16).to(device=settings.device)
+            self.generator = DCGANGenerator(
+                z_dim=self.z_dim, img_chan=img_chan, hidden_dim=64
+            ).to(device=settings.device)
+            self.discriminator = DCGANDiscriminator(
+                img_chan=img_chan, hidden_dim=16
+            ).to(device=settings.device)
             # self.generator = Generator(
             #     dataset, self.z_dim, img_chan=1, hidden_dim=64
             # ).to(device=settings.device)
@@ -82,7 +131,7 @@ class GAN:
         sounds_list = []
         for fake in fakes:
             STFT_mel = fake.numpy().copy()
-            sound = self.operator.backward(STFT_mel,unnormalize=True)
+            sound = self.operator.backward(STFT_mel, unnormalize=True)
             sounds_list.append(torch.tensor(sound))
         sounds_tensor = torch.stack(sounds_list)
         return sounds_tensor
@@ -105,6 +154,7 @@ class GAN:
             torch.nn.init.constant_(m.bias, 0)
 
     def _init_optimizer(self, *args, **kwargs):
+
         raise NotImplementedError
 
     def _init_criterion(self, **kwargs):
@@ -126,6 +176,22 @@ class GAN:
         models_dir=settings.MODELS_DIR,
         show_fig=False,
     ):
+        """
+
+        Parameters
+        ----------
+        train_dataloader
+        lr
+        k_disc_steps
+        n_epochs
+        display_step
+        models_dir
+        show_fig
+
+        Returns
+        -------
+
+        """
         # TODO: Add save model checkpoints and resume training from checkpoints
         start = time.time()
         # defining a SummaryWriter to write information to TensorBoard
@@ -142,12 +208,14 @@ class GAN:
         self._init_optimizer(lr)
         self._init_criterion()
 
+        # placeholders to save losses and generated data evolution during training
         d_losses = torch.zeros(n_epochs)
         g_losses = torch.zeros(n_epochs)
         img_list = []
-        it = 0
-        it_display = 0
+
+        it = 0  # number of batch iterations updated at the end of the dataloader for loop
         for epoch in range(n_epochs):
+            it_display = 0
             cur_step = 0
             g_loss = 0
             d_loss = 0
@@ -155,7 +223,7 @@ class GAN:
             d_display_losses = np.zeros(self.nb_loss_disc)
             g_display_loss = 0
             for real in tqdm(train_dataloader):
-                
+
                 if self.dataset == "MNIST":
                     real, _ = real
                 cur_batch_size = len(real)
@@ -258,8 +326,8 @@ class GAN:
                             )
 
                         # Add real samples to tensorboard
-                        imgs_real = real[:min(len(real), 4), :, :, :].detach().cpu()
-                        
+                        imgs_real = real[: min(len(real), 4), :, :, :].detach().cpu()
+
                         # denormalize mel spectrograms
                         # v_max = 2.2926
                         # v_min = -6.0
@@ -267,7 +335,7 @@ class GAN:
                         real_sounds_tensor = self.get_sounds(imgs_real)
                         real_figure = image_grid_spectrograms(imgs_real)
                         print(torch.min(imgs_real))
-                        
+
                         writer.add_figure(
                             "real_images",
                             real_figure,
@@ -315,6 +383,21 @@ class GAN:
         generator_filename,
         discriminator_filename,
     ):
+        """
+
+        Parameters
+        ----------
+        epoch
+        gen_losses
+        disc_losses
+        models_dir
+        generator_filename
+        discriminator_filename
+
+        Returns
+        -------
+
+        """
         torch.save(
             {
                 "epoch": epoch,

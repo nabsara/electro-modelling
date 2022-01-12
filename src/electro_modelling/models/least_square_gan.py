@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import torch
 import torch.nn as nn
 
@@ -5,12 +11,31 @@ from electro_modelling.models.base import GAN
 
 
 class LeastSquareGAN(GAN):
+    """
+
+    Parameters
+    ----------
+    z_dim
+    """
+
     def __init__(self, z_dim):
         super().__init__(
             z_dim=z_dim, model_name="least_square_dcgan", init_weights=True
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):
+        """
+
+        Parameters
+        ----------
+        learning_rate
+        beta_1
+        beta_2
+
+        Returns
+        -------
+
+        """
         self.gen_opt = torch.optim.Adam(
             self.generator.parameters(), lr=learning_rate, betas=(beta_1, beta_2)
         )
@@ -19,6 +44,12 @@ class LeastSquareGAN(GAN):
         )
 
     def _init_criterion(self):
+        """
+
+        Returns
+        -------
+
+        """
         self.criterion = nn.MSELoss()
 
     def _compute_disc_loss(self, real, fake, disc_real_pred, disc_fake_pred):

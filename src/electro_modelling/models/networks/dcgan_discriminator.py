@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+
+"""
+
 import torch.nn as nn
 
 from electro_modelling.models.networks.base import DNet
@@ -26,6 +31,12 @@ class DCGANDiscriminator(DNet):
         self.model = self._build_network()
 
     def _build_network(self) -> nn.Sequential:
+        """
+
+        Returns
+        -------
+
+        """
         return nn.Sequential(
             self._make_disc_block(
                 input_channels=self.img_chan,

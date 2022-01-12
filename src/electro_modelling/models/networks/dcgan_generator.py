@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import torch.nn as nn
 
 from electro_modelling.models.networks.base import GNet
@@ -30,6 +36,12 @@ class DCGANGenerator(GNet):
         self.model = self._build_network()
 
     def _build_network(self):
+        """
+
+        Returns
+        -------
+
+        """
         return nn.Sequential(
             self._make_gen_block(
                 input_channels=self.z_dim,

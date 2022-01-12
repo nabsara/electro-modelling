@@ -1,9 +1,27 @@
+# -*- coding: utf-8 -*-
+
+"""
+Modules that
+TODO: TO COMPLETE
+"""
+
 import torch
 import numpy as np
 from torch.utils.data import Dataset
 
 
 class TechnoDatasetWav(Dataset):
+    """
+
+    Parameters
+    ----------
+    dat_location : str
+        absolute path to techno.dat file containing the audio data
+
+    Attributes
+    ----------
+    """
+
     def __init__(self, dat_location="/fast-1/tmp/techno.dat") -> None:
         super().__init__()
 
@@ -22,6 +40,21 @@ class TechnoDatasetWav(Dataset):
 
 
 class TechnoDatasetWavtoMel(Dataset):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    operator
+    transform
+    phase_method
+    dat_location
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(
         self,
         operator,
@@ -45,7 +78,7 @@ class TechnoDatasetWavtoMel(Dataset):
 
     def __getitem__(self, index):
         sample = np.copy(self.samples[index])
-        mel = self.operator.forward(sample,normalize=True)
+        mel = self.operator.forward(sample, normalize=True)
         mel = torch.tensor(mel).float()
         if self.phase_method == "griff":
             mel = mel[:1, :, :]
@@ -55,6 +88,20 @@ class TechnoDatasetWavtoMel(Dataset):
 
 
 class TechnoDatasetSpectrogram(Dataset):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    tensors
+    transform
+    phase_method
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(self, tensors, transform=None, phase_method="griff"):
         super().__init__()
         if phase_method == "griff":

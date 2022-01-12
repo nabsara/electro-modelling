@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import os
 
 from electro_modelling.helpers.utils import save_pickle
@@ -7,6 +13,16 @@ from electro_modelling.datasets.signal_processing import SignalOperators
 
 
 class TechnoPipeline:
+    """
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(
         self,
         model_name,
@@ -47,6 +63,20 @@ class TechnoPipeline:
     def train(
         self, learning_rate, k_disc_steps, n_epochs, display_step, show_fig=False
     ):
+        """
+
+        Parameters
+        ----------
+        learning_rate
+        k_disc_steps
+        n_epochs
+        display_step
+        show_fig
+
+        Returns
+        -------
+
+        """
         d_loss, g_loss, img_list = self.model.train(
             train_dataloader=self.train_loader,
             lr=learning_rate,
