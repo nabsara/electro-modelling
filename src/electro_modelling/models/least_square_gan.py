@@ -18,9 +18,13 @@ class LeastSquareGAN(GAN):
     z_dim
     """
 
-    def __init__(self, z_dim):
+    def __init__(self, z_dim, dataset="MNIST", img_chan=1):
         super().__init__(
-            z_dim=z_dim, model_name="least_square_dcgan", init_weights=True
+            z_dim=z_dim,
+            model_name="least_square_dcgan",
+            init_weights=True,
+            dataset=dataset,
+            img_chan=img_chan
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):
@@ -77,7 +81,9 @@ class LeastSquareGAN(GAN):
         )
         disc_real_loss = self.criterion(disc_real_pred, torch.ones_like(disc_real_pred))
         disc_loss = (disc_fake_loss + disc_real_loss) / 2
-        return disc_loss
+        losses = [disc_loss.item(), disc_fake_loss.item(), disc_real_loss.item()]
+        losses_names = ["Total loss", "Fake prediction loss", "Real prediction loss"]
+        return disc_loss, losses, losses_names
 
     def _compute_gen_loss(self, disc_fake_pred):
         """
