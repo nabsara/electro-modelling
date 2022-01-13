@@ -18,13 +18,15 @@ class LeastSquareGAN(GAN):
     z_dim
     """
 
-    def __init__(self, z_dim, dataset="MNIST", img_chan=1):
+    def __init__(self, z_dim, dataset="MNIST", img_chan=1, nb_fixed_noise=4, operator=None):
         super().__init__(
             z_dim=z_dim,
             model_name="least_square_dcgan",
             init_weights=True,
             dataset=dataset,
-            img_chan=img_chan
+            img_chan=img_chan,
+            nb_fixed_noise=nb_fixed_noise,
+            operator=operator,
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0.5, beta_2=0.999):
