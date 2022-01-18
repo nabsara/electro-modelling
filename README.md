@@ -5,8 +5,7 @@ In this project, we will adapt the GANSynth model approach to electronic music m
 of relying on phase estimation algorithms.
 
 
-
-https://user-images.githubusercontent.com/36830545/150009712-0b4319ca-bfcb-4c2b-a897-2f7577bc7d80.mp4
+https://github.com/nabsara/electro-modelling/blob/master/docs/assets/finished_video12.mp4
 
 
 
