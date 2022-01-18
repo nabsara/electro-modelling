@@ -4,6 +4,12 @@ Adversarial modelling of electronic music loops
 In this project, we will adapt the GANSynth model approach to electronic music modelling, and will evaluate the effect of generating instantaneous frequencies instead
 of relying on phase estimation algorithms.
 
+
+
+https://user-images.githubusercontent.com/36830545/150009712-0b4319ca-bfcb-4c2b-a897-2f7577bc7d80.mp4
+
+
+
 ## Install :
 
 - Clone the github repository :
