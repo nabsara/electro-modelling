@@ -13,27 +13,62 @@ layout: default
 	<p>Welcome to our page ! Here, we present the results of our model TechnoGANSynth based on the GANSynth architecture to generate electronic music loops enjoy ! 
 	</p>
 	
-	<h4>Low Resolution nmels = 128</h4>
+	<h2>TECHNO GAN SYNTH</h2>
+	<h3>Latent Space Exploration</h3>
 	
-	<video src="https://user-images.githubusercontent.com/36830545/150172187-2cb0667c-f6b2-4869-b6ca-ba3d2739c081.mp4" controls="controls" style="max-width: 730px;">
-	</video>
-	
-	
+	<p><strong>Low Resolution - 128 Mel Bands </strong></p>
 	<video id="flatness" class="video-js vjs-default-skin" controls="" preload="auto" width="600" height="288" data-setup="{}">
-	<source src="assets/finished_video12.mp4" type="video/mp4">
+	<source src="assets/Low_res.mp4" type="video/mp4">
 	</video>
 	
-	<h4>High Resolution nmels = 512</h4>
-	
-	<video src="https://user-images.githubusercontent.com/36830545/150172223-1a462c60-6f54-4203-a410-a9a6d32b745d.mp4" controls="controls" style="max-width: 730px;">
+	<p><strong>High Resolution - 512 Mel Bands</strong></p>
+	<video id="flatness" class="video-js vjs-default-skin" controls="" preload="auto" width="600" height="288" data-setup="{}">
+	<source src="assets/Hi_Res.mp4" type="video/mp4">
 	</video>
+	
+	<h3>Audio Samples</h3>
+	
+	<table style="border-collapse: collapse; border: none;">
+	  <tbody><tr style="border-bottom: 1px solid black;">
+
+	    <td style="border: none;text-align: center; vertical-align: middle;"><b>Low Resolution</b></td>
+	    <td style="border: none;text-align: center; vertical-align: middle;"><b>High Resolution</b></td>
+
+	  </tr
+
+	  <tr>	  
+	    <td style="border: none;text-align: center; vertical-align: middle;">
+	      <audio controls="">
+	      <source src="assets/LowRes/audio_0.mp3">
+	      </audio>
+	    </td>
+	    <td style="border: none;text-align: center; vertical-align: middle;">
+	      <audio controls="">
+	      <source src="assets/HiRes2/audio_0.mp3">
+	      </audio>
+	    </td>				    
+	  </tr>
+
+	  <tr>	  
+	    <td style="border: none;text-align: center; vertical-align: middle;">
+	      <audio controls="">
+	      <source src="assets/LowRes/audio_1.mp3">
+	      </audio>
+	    </td>
+	    <td style="border: none;text-align: center; vertical-align: middle;">
+	      <audio controls="">
+	      <source src="assets/HiRes2/audio_1.mp3">
+	      </audio>
+	    </td>				    
+	  </tr>	  	  
+	</tbody></table>				
 	
 	<!---
 	<video autoplay="autoplay" controls="controls" preload="preload" width="500" height="600">
 		<source src="https://github.com/nabsara/electro-modelling/blob/webapp/docs/assets/finished_video12.mp4" type="video/mp4"></source>
 	</video>-->
 	
-	<h2>MNIST</h2>
+	<h2>MNIST Experiments</h2>
 	<div class="row">
   		<div class="column">
 			Original GAN : 
@@ -53,47 +88,8 @@ layout: default
 		</div>
 	</div>
 
-<h2>Audio Examples</h2>
-<table style="border-collapse: collapse; border: none;">
-  <tbody><tr style="border-bottom: 1px solid black;">
-  
-    <td style="border: none;text-align: center; vertical-align: middle;"><b>Low Resolution</b></td>
-    <td style="border: none;text-align: center; vertical-align: middle;"><b>High Resolution</b></td>
-    
-  </tr
-	  
-  <tr>	  
-    <td style="border: none;text-align: center; vertical-align: middle;">
-      <audio controls="">
-      <source src="assets/LowRes/audio_0.mp3">
-      </audio>
-    </td>
-    <td style="border: none;text-align: center; vertical-align: middle;">
-      <audio controls="">
-      <source src="assets/HiRes2/audio_0.mp3">
-      </audio>
-    </td>				    
-  </tr>
-	  
-  <tr>	  
-    <td style="border: none;text-align: center; vertical-align: middle;">
-      <audio controls="">
-      <source src="assets/LowRes/audio_1.mp3">
-      </audio>
-    </td>
-    <td style="border: none;text-align: center; vertical-align: middle;">
-      <audio controls="">
-      <source src="assets/HiRes2/audio_1.mp3">
-      </audio>
-    </td>				    
-  </tr>	  
-	  
-	  
-	  
-	  
-	  
-	  
-</tbody></table>
+
+
 	
 </body>
 </html>
