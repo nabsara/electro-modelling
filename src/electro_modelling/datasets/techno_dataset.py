@@ -1,9 +1,26 @@
+# -*- coding: utf-8 -*-
+
+"""
+Modules that
+TODO: TO COMPLETE
+"""
+
 import torch
 import numpy as np
 from torch.utils.data import Dataset
 
 
 class TechnoDatasetWav(Dataset):
+    """
+
+    Parameters
+    ----------
+    dat_location : str
+        absolute path to techno.dat file containing the audio data
+
+    Attributes
+    ----------
+    """
 
     def __init__(self, dat_location="/fast-1/tmp/techno.dat") -> None:
         super().__init__()
@@ -20,11 +37,31 @@ class TechnoDatasetWav(Dataset):
     def __getitem__(self, index):
         # return torch.from_numpy(np.copy(self.samples[index])).float()
         return np.copy(self.samples[index])
-    
-    
-class TechnoDatasetWavtoMel(Dataset):
 
-    def __init__(self,operator,transform=None,phase_method = 'griff', dat_location="/fast-1/tmp/techno.dat") -> None:
+
+class TechnoDatasetWavtoMel(Dataset):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    operator
+    transform
+    phase_method
+    dat_location
+
+    Attributes
+    ----------
+
+    """
+
+    def __init__(
+        self,
+        operator,
+        transform=None,
+        phase_method="griff",
+        dat_location="/fast-1/tmp/techno.dat",
+    ) -> None:
         super().__init__()
 
         self.samples = np.memmap(
@@ -40,28 +77,38 @@ class TechnoDatasetWavtoMel(Dataset):
         return self.samples.shape[0]
 
     def __getitem__(self, index):
-        sample = np.copy(self.samples[index]) 
-        mel = self.operator.forward(sample)
+        sample = np.copy(self.samples[index])
+        mel = self.operator.forward(sample, normalize=True)
         mel = torch.tensor(mel).float()
-        if self.phase_method == 'griff':
-            mel = mel[:1,:,:]
-            max = 2.2926
-            min = -6.0
-            mel = (mel-0.5*(max+min))/(0.5*abs(max-min))
+        if self.phase_method == "griff":
+            mel = mel[:1, :, :]
         else:
             raise NotImplementedError
-        return mel 
-    
-    
-    
+        return mel
+
+
 class TechnoDatasetSpectrogram(Dataset):
-    def __init__(self, tensors,transform=None,phase_method = 'griff'):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    tensors
+    transform
+    phase_method
+
+    Attributes
+    ----------
+
+    """
+
+    def __init__(self, tensors, transform=None, phase_method="griff"):
         super().__init__()
-        if phase_method=='griff':
-            self.tensors = tensors[:,:1,:,:]
-        elif phase_method == 'IF':
+        if phase_method == "griff":
+            self.tensors = tensors[:, :1, :, :]
+        elif phase_method == "IF":
             self.tensors = tensors
-        self.tensors=self.tensors.float()
+        self.tensors = self.tensors.float()
         self.transform = transform
 
     def __len__(self):
@@ -69,7 +116,7 @@ class TechnoDatasetSpectrogram(Dataset):
 
     def __getitem__(self, index):
         x = self.tensors[index]
-        
+
         if self.transform:
             x = self.transform(x)
-        return(x)
+        return x

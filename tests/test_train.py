@@ -17,18 +17,19 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 data_dir =r"C:\Users\NILS\Documents\ATIAM\Informatique\PROJET\data"
-dataset_dir = data_dir + r'\techno_spectrograms.pkl'
+dataset_dir = data_dir + r'\techno.dat'
 models_dir = data_dir
-batch_size = 4
+batch_size = 2
 z_dims = 256
 model = "wgan"
 n_epochs = 1 
 learning_rate = 0.0002 
-k_disc_steps = 1
-display_step = 5
+k_disc_steps = 5
+display_step = 1
+nmels=512
 show = True
 
-pipeline = TechnoPipeline( model, dataset_dir,models_dir, batch_size, z_dims)
+pipeline = TechnoPipeline( model, dataset_dir,models_dir, batch_size, z_dims,nmels=nmels)
 pipeline.train(
     learning_rate=learning_rate,
     k_disc_steps=k_disc_steps,
@@ -40,7 +41,7 @@ pipeline.train(
 
 
 
-# from electro_modelling.models.dcgan import DCGAN
+# from electro_modelling.models.dcgan import GAN
 # from electro_modelling.helpers.helpers_audio import *
 # from electro_modelling.datasets.signal_processing import SignalOperators
 # from electro_modelling.datasets.techno_dataloader import techno_data_loader
@@ -49,7 +50,7 @@ pipeline.train(
 # file_writer = SummaryWriter(logdir)        
 
 
-# model = DCGAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
+# model = GAN(z_dims, model, init_weights=True,dataset='techno',img_chan=1)
 # sr = 16000
 # Nfft =1024
 # Nmels = int(Nfft/2)

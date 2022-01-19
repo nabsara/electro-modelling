@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import click
 import os
 from electro_modelling.config import settings
@@ -47,13 +53,26 @@ from electro_modelling.pipelines.techno_pipeline import TechnoPipeline
     default=500,
     help="Number of iterations between each training stats display",
 )
-@click.option('--show', is_flag=True)
-def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+@click.option("--show", is_flag=True)
+def train_mnist_gan(
+    model,
+    data_dir,
+    models_dir,
+    batch_size,
+    z_dims,
+    n_epochs,
+    learning_rate,
+    k_disc_steps,
+    display_step,
+    show,
+):
     """
-    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+    CLI to train a specified model on MNIST dataset given the input
+    hyper-parameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+        model to run : 'dcgan' (SimpleGAN), 'hgan' (HingeGAN),
+        'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
@@ -64,10 +83,8 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
         k_disc_steps=k_disc_steps,
         n_epochs=n_epochs,
         display_step=display_step,
-        show_fig=show
+        show_fig=show,
     )
-
-
 
 
 @click.option(
@@ -92,17 +109,18 @@ def train_mnist_gan(model, data_dir, models_dir, batch_size, z_dims, n_epochs, l
 )
 @click.option(
     "--nb_samples",
-    default=None,
+    default=-1,
     help="Sampling Rate",
 )
 def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
-    # Signal processing parameters
-    nmels = int(nfft/2)
     # File locations
-    dataset_location = os.path.join(data_path, 'techno.dat')
-    save_location = os.path.join(save_dir, 'techno_spectrograms.pkl')
-    # Instanciate pipeline
-    pipeline = TechnoDatasetPipeline(nfft, nmels, sr, dataset_location=dataset_location, save_location=save_location)
+    dataset_location = os.path.join(data_path, "techno.dat")
+    save_location = os.path.join(save_dir, "techno_spectrograms.pkl")
+
+    # Instantiate pipeline
+    pipeline = TechnoDatasetPipeline(
+        nfft=nfft, sr=sr, dataset_location=dataset_location, save_location=save_location
+    )
     pipeline.process_dataset(nb_samples=nb_samples)
 
 
@@ -124,12 +142,12 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 )
 @click.option(
     "--nmels",
-    default=512,
+    default=128,
     help="Number of mel frequencies",
 )
 @click.option(
     "--batch_size",
-    default=32,
+    default=16,
     help="Data loader batch size",
 )
 @click.option(
@@ -144,26 +162,41 @@ def prepare_dataset(nfft, sr, data_path, save_dir, nb_samples):
 )
 @click.option(
     "--learning_rate",
-    default=0.0002,
+    default=0.0001,
     help="Learning rate",
 )
 @click.option(
     "--k_disc_steps",
-    default=1,
+    default=5,
     help="Number of training step to update only discriminator",
 )
 @click.option(
     "--display_step",
-    default=500,
+    default=250,
     help="Number of iterations between each training stats display",
 )
-@click.option('--show', is_flag=True)
-def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size, z_dims, n_epochs, learning_rate, k_disc_steps, display_step, show):
+@click.option("--show", is_flag=True)
+def train_techno_gan(
+    model,
+    dataset_file,
+    data_dir,
+    models_dir,
+    nmels,
+    batch_size,
+    z_dims,
+    n_epochs,
+    learning_rate,
+    k_disc_steps,
+    display_step,
+    show,
+):
     """
-    CLI to train a specified model on MNIST dataset given the input hyperparameters.
+    CLI to train a specified model on MNIST dataset given the input
+    hyperparameters.
 
     model: str
-        model to run : 'dcgan' (SimpleDCGAN), 'hgan' (HingeGAN), 'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
+        model to run : 'dcgan' (SimpleGAN), 'hgan' (HingeGAN),
+        'lsgan' (LeastSquareGAN), 'wgan' (WGAN-GP)
     """
     # TODO: Add config file to deal with hyperparameters
     # TODO: connect to tensorboard
@@ -175,12 +208,12 @@ def train_techno_gan(model, dataset_file, data_dir, models_dir,nmels, batch_size
         batch_size=batch_size,
         z_dims=z_dims,
         nmels=nmels,
-        phase_method='griff'
+        phase_method="griff",
     )
     pipeline.train(
         learning_rate=learning_rate,
         k_disc_steps=k_disc_steps,
         n_epochs=n_epochs,
         display_step=display_step,
-        show_fig=show
+        show_fig=show,
     )

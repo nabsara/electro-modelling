@@ -1,18 +1,31 @@
-from torchvision import transforms
+# -*- coding: utf-8 -*-
+
+"""
+Module that defines train DataLoader on Techno dataset
+"""
+
 from torch.utils.data import DataLoader
-from electro_modelling.helpers.utils import load_pickle
-from electro_modelling.datasets.techno_dataset import TechnoDatasetWav, TechnoDatasetWavtoMel
+from electro_modelling.datasets.techno_dataset import TechnoDatasetWavtoMel
 
 
-def techno_data_loader(batch_size, data_dir,operator,phase_method='griff'):
-    if phase_method == 'griff':
-        transform = transforms.Compose([
-            transforms.Normalize((-3.76), (10.05))  #TO BE MODIFIED
-        ])    
-    elif phase_method =='IF':
-        transform = transforms.Compose([
-            transforms.Normalize((-3.76, 0), (10.05,1))  #TO BE MODIFIED
-        ])
-    train_set = TechnoDatasetWavtoMel(operator,phase_method = 'griff', dat_location=data_dir)
+def techno_data_loader(batch_size, data_dir, operator):
+    """
+    TODO: TO COMPLETE
+    Attributes
+    ----------
+
+    Parameters
+    ----------
+    batch_size
+    data_dir
+    operator
+
+    Returns
+    -------
+
+    """
+    train_set = TechnoDatasetWavtoMel(
+        operator, phase_method="griff", dat_location=data_dir
+    )
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     return train_loader
