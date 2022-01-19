@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 from electro_modelling.helpers.utils import save_pickle
 from electro_modelling.datasets.techno_dataset import TechnoDatasetWav
 from electro_modelling.datasets.signal_processing import SignalOperators
@@ -8,6 +14,16 @@ import numpy as np
 
 
 class TechnoDatasetPipeline:
+    """
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(
         self,
         nfft=1024,
@@ -28,6 +44,16 @@ class TechnoDatasetPipeline:
         self.len_dataset = len(self.dataset)
 
     def process_dataset(self, nb_samples=-1):
+        """
+
+        Parameters
+        ----------
+        nb_samples
+
+        Returns
+        -------
+
+        """
         spectrograms = []
         if nb_samples == -1:
             nb_samples = self.len_dataset

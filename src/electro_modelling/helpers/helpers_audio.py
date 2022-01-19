@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+"""
+Modules that defines audio helpers functions to plot
+spectrograms using matplotlib figures
+"""
+
 import soundfile as sf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,6 +13,22 @@ import librosa
 
 
 def write_wav(path, signal, sr=16000):
+    """
+    Write signal data into .wav file
+
+    Parameters
+    ----------
+    path : str
+        absolute filepath
+    signal : np.array
+        signal array to save
+    sr : int
+        sampling rate, default is 16 kHz
+
+    Returns
+    -------
+        None
+    """
     sf.write(path, signal, sr)
 
 
@@ -19,6 +42,25 @@ def plot_spectrogram(
     titles=["Amplitudes", "Phase"],
     figsize=(15, 6),
 ):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    STFT_amp
+    STFT_phase
+    freqs
+    times
+    labelRow
+    labelCol
+    titles
+    figsize
+
+    Returns
+    -------
+        None
+    """
+
     def add_colorbar(fig, ax, im):
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -42,6 +84,20 @@ def plot_spectrogram(
 
 
 def plot_spectrogram_mag(STFT_amp, fig=None, ax=None):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    STFT_amp
+    fig
+    ax
+
+    Returns
+    -------
+
+    """
+
     def add_colorbar(fig, ax, im):
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -69,6 +125,17 @@ def plot_spectrogram_mag(STFT_amp, fig=None, ax=None):
 
 
 def image_grid_spectrograms(fakes):
+    """
+    TODO: TO COMPLETE
+
+    Parameters
+    ----------
+    fakes
+
+    Returns
+    -------
+
+    """
     """Return a 5x5 grid of the MNIST images as a matplotlib figure."""
     # Create a figure to contain the plot.
     fig, axs = plt.subplots(1, fakes.shape[0], figsize=(13, 5))

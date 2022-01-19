@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import click
 import os
 from electro_modelling.config import settings

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import click
 from electro_modelling.cli import train_mnist_gan, prepare_dataset, train_techno_gan
 

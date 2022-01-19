@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+"""
+
 import torch
 
 from electro_modelling.config import settings
@@ -10,19 +16,39 @@ class WGANGP(GAN):
     we keep the discriminator class attributes though it corresponds
     to the critic model here !
     i.e. self.discriminator, self.disc_opt,
+
+    Parameters
+    ----------
+
     """
 
-    def __init__(self, z_dim, dataset, img_chan, operator=None):
+    def __init__(self, z_dim, dataset, img_chan=1, nb_fixed_noise=4, operator=None):
         super().__init__(
             z_dim=z_dim,
             model_name="wgan",
             init_weights=True,
             dataset=dataset,
             img_chan=img_chan,
+            nb_fixed_noise=nb_fixed_noise,
             operator=operator,
         )
 
     def _init_optimizer(self, learning_rate, beta_1=0, beta_2=0.9):
+        """
+
+        Parameters
+        ----------
+        learning_rate
+        beta_1
+        beta_2
+
+        Returns
+        -------
+
+        """
+        if self.dataset == "MNIST":
+            beta_1 = 0.5
+            beta_2 = 0.999
         # TODO: Check with RMS Prop cf. W-GAN with weights clipping paper
         self.gen_opt = torch.optim.Adam(
             self.generator.parameters(), lr=learning_rate, betas=(beta_1, beta_2)

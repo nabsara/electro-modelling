@@ -1,7 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+
+"""
+
 import torch.nn as nn
 
 
 class GNet(nn.Module):
+    """
+
+    Attributes
+    ----------
+
+    Parameters
+    ----------
+    z_dim
+    img_chan
+    hidden_dim
+    """
+
     def __init__(self, z_dim, img_chan, hidden_dim):
         super().__init__()
         self.z_dim = z_dim
@@ -9,9 +26,31 @@ class GNet(nn.Module):
         self.hidden_dim = hidden_dim
 
     def _build_network(self) -> nn.Sequential:
+        """
+
+        Returns
+        -------
+            nn.Sequential instance
+        """
         raise NotImplementedError
 
-    def _make_gen_block(self, input_channels, output_channels, kernel_size, stride, **kwargs):
+    def _make_gen_block(
+        self, input_channels, output_channels, kernel_size, stride, **kwargs
+    ):
+        """
+
+        Parameters
+        ----------
+        input_channels
+        output_channels
+        kernel_size
+        stride
+        kwargs
+
+        Returns
+        -------
+            nn.Sequential instance
+        """
         raise NotImplementedError
 
     def forward(self, x):
@@ -35,15 +74,42 @@ class GNet(nn.Module):
 
 
 class DNet(nn.Module):
+    """
+
+    Attributes
+    ----------
+    img_chan
+    hidden_dim
+    """
+
     def __init__(self, img_chan, hidden_dim):
         super().__init__()
         self.img_chan = img_chan
         self.hidden_dim = hidden_dim
 
     def _build_network(self) -> nn.Sequential:
+        """
+
+        Returns
+        -------
+            nn.Sequential instance
+        """
         raise NotImplementedError
 
     def _make_disc_block(self, input_channels, output_channels, kernel_size, stride):
+        """
+
+        Parameters
+        ----------
+        input_channels
+        output_channels
+        kernel_size
+        stride
+
+        Returns
+        -------
+            nn.Sequential instance
+        """
         raise NotImplementedError
 
     def forward(self, x):

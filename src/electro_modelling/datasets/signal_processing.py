@@ -1,8 +1,42 @@
+# -*- coding: utf-8 -*-
+
+"""
+Module that defines the SignalOperator class to process
+audio signal
+TODO: TO COMPLETE
+"""
+
 import numpy as np
 import librosa
 
 
 class SignalOperators:
+    """
+    TODO: Class description
+
+    Parameters
+    ----------
+    nfft : int
+        default is 1024
+    nmels : int
+
+    sr :
+
+    ntimes :
+
+    signal_length :
+
+    phase_rec_method :
+
+    v_max :
+
+    v_min :
+
+    Attributes
+    ----------
+
+    """
+
     def __init__(
         self,
         nfft=1024,
@@ -11,11 +45,9 @@ class SignalOperators:
         ntimes=128,
         signal_length=32000,
         phase_rec_method="Griffin-Lim",
-        v_max = 2.2926,
-        v_min = -6.0
-        
+        v_max=2.2926,
+        v_min=-6.0,
     ):
-
         # Parameters for the STFT analysis and synthesis
         self.ntimes = ntimes
         self.nfft = nfft
@@ -58,25 +90,72 @@ class SignalOperators:
             self.griffin_phase_init = None
             self.griffin_nb_iterations = 50
             self.griffin_required_loss = False
-    def normalize_spectrogram(self,STFT_amp):
-        return ((STFT_amp - 0.5 * (self.v_max + self.v_min)) / (0.5 * abs(self.v_max - self.v_min))) 
-    
-    def unnormalize_spectrogram(self,STFT_amp_norm):
-        return (STFT_amp_norm * (0.5 * abs(self.v_max - self.v_min)) + 0.5 * (self.v_max + self.v_min))
-    
-    def forward(self, signal,normalize=False):
+
+    def normalize_spectrogram(self, STFT_amp):
+        """
+
+        Parameters
+        ----------
+        STFT_amp
+
+        Returns
+        -------
+
+        """
+        return (STFT_amp - 0.5 * (self.v_max + self.v_min)) / (
+            0.5 * abs(self.v_max - self.v_min)
+        )
+
+    def unnormalize_spectrogram(self, STFT_amp_norm):
+        """
+
+        Parameters
+        ----------
+        STFT_amp_norm
+
+        Returns
+        -------
+
+        """
+        return STFT_amp_norm * (0.5 * abs(self.v_max - self.v_min)) + 0.5 * (
+            self.v_max + self.v_min
+        )
+
+    def forward(self, signal, normalize=False):
+        """
+
+        Parameters
+        ----------
+        signal
+        normalize
+
+        Returns
+        -------
+
+        """
         STFT = self.get_stft(signal)
         STFT_mel = self.stft_to_mel(STFT)
-        if normalize==True:
+        if normalize:
             STFT_mel[0] = self.normalize_spectrogram(STFT_mel[0])
         return STFT_mel
 
-    def backward(self, STFT_mel,unnormalize=False):
+    def backward(self, STFT_mel, unnormalize=False):
+        """
+
+        Parameters
+        ----------
+        STFT_mel
+        unnormalize
+
+        Returns
+        -------
+
+        """
         if (
             self.phase_rec_method == "Griffin-Lim"
         ):  # Use the Griffin-Lim algorithm to reconstruct the phase
             # from a STFT amplitude
-            if unnormalize==True:
+            if unnormalize:
                 STFT_mel[0] = self.unnormalize_spectrogram(STFT_mel[0])
             STFT_mel_amp_log = STFT_mel[0]
             STFT_mel_amp = 10 ** (STFT_mel_amp_log)
@@ -98,14 +177,45 @@ class SignalOperators:
         return signal
 
     def get_IF_from_phase(self, phase):
+        """
+
+        Parameters
+        ----------
+        phase
+
+        Returns
+        -------
+
+        """
         unwrapped_phase = np.unwrap(phase, axis=1)
         IF = np.pad(np.diff(unwrapped_phase, axis=1) / np.pi, ([0, 0], [1, 0]))
         return IF
 
     def get_phase_from_if(self, IF):
+        """
+
+        Parameters
+        ----------
+        IF
+
+        Returns
+        -------
+
+        """
         return np.cumsum(IF * np.pi, axis=1)
 
-    def get_stft(self, signal,pad=True):
+    def get_stft(self, signal, pad=True):
+        """
+
+        Parameters
+        ----------
+        signal
+        pad
+
+        Returns
+        -------
+
+        """
         current_nb_trames = int((signal.shape[0] - self.win_length) / self.hop)
         
         STFT = np.zeros((self.nfft2, current_nb_trames), dtype="complex")
@@ -116,11 +226,21 @@ class SignalOperators:
             fen = np.hanning(len(signal_w))
             signal_w = signal_w * fen
             STFT[:, j] = np.fft.rfft(signal_w, self.nfft)
-        if pad==True:
+        if pad:
             STFT = np.pad(STFT, ([0, 0], [0, self.ntimes - current_nb_trames]))
         return STFT
 
     def stft_to_mel(self, STFT):
+        """
+
+        Parameters
+        ----------
+        STFT
+
+        Returns
+        -------
+
+        """
         STFT_mel_amp = np.dot(self.mel_fbank, np.abs(STFT))
         STFT_mel_amp = np.log10(STFT_mel_amp + 1e-6)
         STFT_mel_if = np.dot(self.mel_fbank, self.get_IF_from_phase(np.angle(STFT)))
@@ -128,6 +248,16 @@ class SignalOperators:
         return STFT_mel
 
     def rebuild_signal(self, STFT):
+        """
+
+        Parameters
+        ----------
+        STFT
+
+        Returns
+        -------
+
+        """
         N = self.hop * STFT.shape[1] + self.win_length
         fen = np.hanning(self.win_length)  # définition de la fenetre d'analyse
         ws = fen
@@ -141,16 +271,45 @@ class SignalOperators:
         return y
 
     def mel_to_stft_griffin(self, STFT_mel_amp):
+        """
+
+        Parameters
+        ----------
+        STFT_mel_amp
+
+        Returns
+        -------
+
+        """
         STFT_amp = np.dot(self.inverse_fbank, STFT_mel_amp)
         return STFT_amp
 
     def mel_to_stft_IF(self, STFT_mel):
+        """
+
+        Parameters
+        ----------
+        STFT_mel
+
+        Returns
+        -------
+
+        """
         STFT_amp = np.dot(self.inverse_fbank, STFT_mel[0, :])
         STFT_IF = np.dot(self.inverse_fbank, STFT_mel[1, :])
         return STFT_amp, STFT_IF
 
     def griffin_phase(self, STFT_amp):
+        """
 
+        Parameters
+        ----------
+        STFT_amp
+
+        Returns
+        -------
+
+        """
         phase_init = self.griffin_phase_init
         nb_iterations = self.griffin_nb_iterations
         required_loss = self.griffin_required_loss
@@ -170,7 +329,7 @@ class SignalOperators:
         for ind_iteration in range(nb_iterations):
             x_recovered = self.rebuild_signal(STFT_hat)
 
-            STFT_temp = self.get_stft(x_recovered,pad=False)
+            STFT_temp = self.get_stft(x_recovered, pad=False)
             STFT_hat = STFT_amp * np.exp(1j * np.angle(STFT_temp))
             if required_loss:
                 loss[ind_iteration] = np.linalg.norm(np.abs(STFT_temp) - STFT_amp)
