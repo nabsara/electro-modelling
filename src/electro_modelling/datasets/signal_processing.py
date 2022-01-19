@@ -107,10 +107,11 @@ class SignalOperators:
 
     def get_stft(self, signal,pad=True):
         current_nb_trames = int((signal.shape[0] - self.win_length) / self.hop)
+        
         STFT = np.zeros((self.nfft2, current_nb_trames), dtype="complex")
-        for j in range(self.nb_trames):
+        for j in range(current_nb_trames):
             i0 = j * self.hop
-            iend = min(i0 + self.win_length, signal.size)
+            iend = min(i0 + self.win_length, signal.shape[0])
             signal_w = signal[i0:iend]
             fen = np.hanning(len(signal_w))
             signal_w = signal_w * fen
